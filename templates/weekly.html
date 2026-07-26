@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Weekly Planner</title>
+  <link rel="stylesheet" href="../styles/planner.css>
+  <style>
+    /* Weekly-specific tuning */
+    .weekly .day {
+      border: 1px solid #e0d5c3;
+      border-radius: 4px;
+      background: #fff;
+      padding: 4px 8px;
+      margin-bottom: 6px;
+    }
+    .weekly .day .dn {
+      font-size: 8.5pt;
+      color: #a5794a;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+    .weekly .day-stack {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    .weekly .day-stack > .day,
+    .weekly .day-stack > .block { flex: 1 1 0; min-height: 0; }
+    .weekly .block { display: flex; flex-direction: column; margin-bottom: 6px; }
+    .weekly .block .box { flex: 1 1 auto; }
+    .weekly .block h4.label { margin-top: 0; }
+    
+    /* Bills column specific */
+    .weekly .bills-box {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .weekly .bills-header {
+      font-size: 9pt;
+      font-weight: 600;
+      color: #a5794a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding-bottom: 4px;
+      border-bottom: 1px dashed var(--line, #e0d5c3);
+      margin-bottom: 6px;
+    }
+    .weekly .bill-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--line, #e0d5c3);
+      font-size: 9pt;
+    }
+    .weekly .bill-line:last-child { border-bottom: none; }
+    .weekly .bill-name { color: var(--ink, #3d2e1f); flex: 1; }
+    .weekly .bill-amount { color: #c0392b; font-weight: 600; margin-left: 8px; white-space: nowrap; }
+    .weekly .bill-due { color: var(--muted, #8b7a6a); font-size: 8pt; margin-left: 8px; white-space: nowrap; }
+    .weekly .bills-empty { color: var(--muted, #8b7a6a); font-size: 9pt; font-style: italic; padding: 8px 0; text-align: center; }
+  </style>
+</head>
+<body>
+  <!-- Left page -->
+  <div class="page weekly left">
+    <div class="hd">
+      <span class="title">&#10086; Week of ____________</span>
+      <span class="ornament"></span>
+    </div>
+    <h4 class="label">Top 3 This Week</h4>
+    <div class="box accent numbered lines">
+      <div class="line"><span class="num">1</span></div>
+      <div class="line"><span class="num">2</span></div>
+      <div class="line"><span class="num">3</span></div>
+    </div>
+    <div class="day-stack" style="margin-top:6px;">
+      <div class="day"><span class="dn">Monday</span></div>
+      <div class="day"><span class="dn">Tuesday</span></div>
+      <div class="day"><span class="dn">Wednesday</span></div>
+      <div class="day"><span class="dn">Thursday</span></div>
+    </div>
+  </div>
+  <!-- Right page -->
+  <div class="page weekly right">
+    <div class="hd">
+      <span class="ornament"></span>
+      <span class="title" style="font-size:12pt;">the week ahead</span>
+    </div>
+    <div class="day-stack">
+      <div class="day"><span class="dn">Friday</span></div>
+      <div class="day"><span class="dn">Saturday</span></div>
+      <div class="day"><span class="dn">Sunday</span></div>
+      <div class="block">
+        <h4 class="label">Bills Due This Week</h4>
+        <div class="box bills-box">
+          <div class="bills-header">Bills Due</div>
+          <div class="bill-line"><span class="bill-name">________________</span><span class="bill-amount">$_____</span><span class="bill-due">Due: ___</span></div>
+          <div class="bill-line"><span class="bill-name">________________</span><span class="bill-amount">$_____</span><span class="bill-due">Due: ___</span></div>
+          <div class="bill-line"><span class="bill-name">________________</span><span class="bill-amount">$_____</span><span class="bill-due">Due: ___</span></div>
+          <div class="bill-line"><span class="bill-name">________________</span><span class="bill-amount">$_____</span><span class="bill-due">Due: ___</span></div>
+          <div class="bills-empty">No bills due this week</div>
+        </div>
+      </div>
+      <div class="block">
+        <h4 class="label">Notes</h4>
+        <div class="box lines fill-lines">
+          <div class="line"></div><div class="line"></div><div class="line"></div>
+          <div class="line"></div><div class="line"></div><div class="line"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

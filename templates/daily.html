@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Daily Planner</title>
+  <link rel="stylesheet" href="../styles/planner.css">
+  <style>
+    /* Daily-specific tuning */
+    .daily .cols { flex: 1 1 auto; min-height: 0; }
+    .daily .col { display: flex; flex-direction: column; min-height: 0; }
+
+    /* Mood-setter quote/lyric box */
+    .daily .mood { font-style: italic; color: #8a7d6b; }
+    .daily .mood .box {
+      background: #f7efe0;
+      border-color: #e2cea6;
+      min-height: 15mm;
+      display: flex;
+      align-items: center;
+    }
+    .daily .mood .box::before {
+      content: "\201C";
+      font-size: 22pt;
+      color: #c9a66b;
+      line-height: 0;
+      margin-right: 4px;
+    }
+
+    /* Right column: three equal, tall time blocks */
+    .daily .timeblock { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; }
+    .daily .timeblock .box { flex: 1 1 auto; }
+
+    /* Self reflection fills the remaining left-column space */
+    .daily .reflect { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+    .daily .reflect .box { flex: 1 1 auto; min-height: 22mm; }
+  </style>
+</head>
+<body>
+  <div class="page daily">
+
+    <div class="hd">
+      <span class="title">&#10086; ______________________</span>
+      <span class="ornament"></span>
+    </div>
+
+    <div class="cols">
+      <!-- Left column -->
+      <div class="col">
+        <div class="mood">
+          <div class="box"></div>
+        </div>
+
+        <h4 class="label">Top 5 Priorities</h4>
+        <div class="box numbered lines">
+          <div class="line"><span class="num">1</span></div>
+          <div class="line"><span class="num">2</span></div>
+          <div class="line"><span class="num">3</span></div>
+          <div class="line"><span class="num">4</span></div>
+          <div class="line"><span class="num">5</span></div>
+        </div>
+
+        <h4 class="label">To-Do</h4>
+        <div class="box lines">
+          <div class="line"><span class="check">&#9744;</span></div>
+          <div class="line"><span class="check">&#9744;</span></div>
+          <div class="line"><span class="check">&#9744;</span></div>
+          <div class="line"><span class="check">&#9744;</span></div>
+          <div class="line"><span class="check">&#9744;</span></div>
+          <div class="line"><span class="check">&#9744;</span></div>
+          <div class="line"><span class="check">&#9744;</span></div>
+          <div class="line"><span class="check">&#9744;</span></div>
+        </div>
+
+        <div class="reflect">
+          <h4 class="label">Self Reflection</h4>
+          <div class="box lines fill-lines">
+            <div class="line"></div><div class="line"></div><div class="line"></div>
+            <div class="line"></div><div class="line"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column: larger time blocks -->
+      <div class="col">
+        <div class="timeblock">
+          <h4 class="label">Morning</h4>
+          <div class="box lines fill-lines">
+            <div class="line"></div><div class="line"></div><div class="line"></div>
+            <div class="line"></div><div class="line"></div>
+          </div>
+        </div>
+        <div class="timeblock">
+          <h4 class="label">Afternoon</h4>
+          <div class="box lines fill-lines">
+            <div class="line"></div><div class="line"></div><div class="line"></div>
+            <div class="line"></div><div class="line"></div>
+          </div>
+        </div>
+        <div class="timeblock">
+          <h4 class="label">Night</h4>
+          <div class="box lines fill-lines">
+            <div class="line"></div><div class="line"></div><div class="line"></div>
+            <div class="line"></div><div class="line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

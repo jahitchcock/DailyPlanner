@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Paper Planner Generator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Lora&family=Merriweather&family=EB+Garamond&family=Cormorant+Garamond&family=Libre+Baskerville&family=Crimson+Text&family=PT+Serif&family=Cardo&family=Cinzel&family=Poppins&family=Montserrat&family=Nunito&family=Raleway&family=Quicksand&family=Josefin+Sans&family=Work+Sans&family=Dancing+Script&family=Caveat&family=Pacifico&family=Sacramento&family=Great+Vibes&family=Satisfy&family=Shadows+Into+Light&family=Patrick+Hand&family=Kalam&family=Indie+Flower&family=Amatic+SC&family=Abril+Fatface&family=Special+Elite&display=swap">
+  <link rel="stylesheet" href="styles/planner.css">
+</head>
+<body>
+
+ <div class="panel-row">
+  <!-- ============ Control panel (screen only) ============ -->
+  <div class="controls">
+    <h1>&#10086; Paper Planner Generator</h1>
+    <div class="row">
+      <label>Start <input type="date" id="start"></label>
+      <label>End <input type="date" id="end"></label>
+    </div>
+    <div class="row checks">
+      <label><input type="checkbox" id="chk-monthly" checked> Monthly</label>
+      <label><input type="checkbox" id="chk-weekly" checked> Weekly</label>
+      <label><input type="checkbox" id="chk-daily" checked> Daily</label>
+    </div>
+    <div class="row">
+      <label>Theme
+        <select id="theme">
+          <option value="">Cottage (warm)</option>
+          <option value="theme-ocean">Ocean</option>
+          <option value="theme-blossom">Blossom</option>
+          <option value="theme-forest">Forest</option>
+          <option value="theme-noir">Noir (minimal)</option>
+          <option value="theme-midnight">Midnight</option>
+          <option value="theme-sunset">Sunset</option>
+          <option value="theme-lavender">Lavender</option>
+          <option value="theme-mint">Mint</option>
+          <option value="theme-sepia">Sepia</option>
+          <option value="theme-bw">Black &amp; White (basic)</option>
+          <option value="custom">Custom…</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <label>Planner size
+        <select id="outsize">
+          <option value="A6">A6</option>
+          <option value="A5" selected>A5</option>
+          <option value="A4">A4</option>
+          <option value="Letter">Letter</option>
+        </select>
+      </label>
+      <label>Paper size
+        <select id="paper">
+          <option value="A5">A5</option>
+          <option value="A4">A4</option>
+          <option value="A3">A3</option>
+          <option value="Letter" selected>Letter</option>
+          <option value="Legal">Legal</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="tile"> Tile 2-up (landscape, cut in half)</label>
+      <label><input type="checkbox" id="duplex"> 2-sided order (duplex)</label>
+      <span id="fit-note" class="hint"></span>
+    </div>
+    <div class="row">
+      <button id="gen">Generate</button>
+      <button id="print" class="secondary" onclick="window.print()">Print / Save PDF</button>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="hint">In the print dialog: Paper size = <b>A5</b>, Margins = <b>None</b>, enable <b>Background graphics</b>.</div>
+  </div>
+
+  <!-- ============ Custom theme panel (populated by JS) ============ -->
+  <div class="custom-panel" id="custom-panel" hidden></div>
+ </div>
+
+  <!-- Cut-and-stack instructions (shown only for duplex + 2-up) -->
+  <div id="assembly" class="assembly" hidden>
+    <h2>&#9986; Cut &amp; stack assembly</h2>
+    <ol>
+      <li>Print all sheets <b>double-sided</b> (flip on <b>long edge</b>), keep them in order.</li>
+      <li><b>Stack</b> the whole printed pile in order, all facing the same way (sheet 1 on top).</li>
+      <li><b>Cut</b> the entire stack once, straight down the vertical center.</li>
+      <li>Set the <b>left pile on top of the right pile</b> (keep each pile's order).</li>
+      <li>The combined stack now reads in order &mdash; the blank leading page is your cover, so the month spread lands on pages 2&ndash;3.</li>
+    </ol>
+  </div>
+
+  <!-- Generated pages land here -->
+  <div id="pages"></div>
+
+  <!-- ============ Daily template ============ -->
+  <template id="tpl-daily">
+    <div class="page daily">
+      <div class="hd">
+        <span class="title"><span class="mark"></span> <span class="js-date"></span></span>
+        <span class="ornament"></span>
+      </div>
+      <div class="cols">
+        <div class="col">
+          <div class="mood"><div class="box"></div></div>
+
+          <h4 class="label">Top 5 Priorities</h4>
+          <div class="box numbered lines">
+            <div class="line"><span class="num">1</span></div>
+            <div class="line"><span class="num">2</span></div>
+            <div class="line"><span class="num">3</span></div>
+            <div class="line"><span class="num">4</span></div>
+            <div class="line"><span class="num">5</span></div>
+          </div>
+
+          <h4 class="label">To-Do</h4>
+          <div class="box lines">
+            <div class="line"><span class="check">&#9744;</span></div>
+            <div class="line"><span class="check">&#9744;</span></div>
+            <div class="line"><span class="check">&#9744;</span></div>
+            <div class="line"><span class="check">&#9744;</span></div>
+            <div class="line"><span class="check">&#9744;</span></div>
+            <div class="line"><span class="check">&#9744;</span></div>
+            <div class="line"><span class="check">&#9744;</span></div>
+            <div class="line"><span class="check">&#9744;</span></div>
+          </div>
+
+          <div class="reflect">
+            <h4 class="label">Self Reflection</h4>
+            <div class="box lines fill-lines">
+              <div class="line"></div><div class="line"></div><div class="line"></div>
+              <div class="line"></div><div class="line"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="timeblock">
+            <h4 class="label">Morning</h4>
+            <div class="box lines fill-lines">
+              <div class="line"></div><div class="line"></div><div class="line"></div>
+              <div class="line"></div><div class="line"></div>
+            </div>
+          </div>
+          <div class="timeblock">
+            <h4 class="label">Afternoon</h4>
+            <div class="box lines fill-lines">
+              <div class="line"></div><div class="line"></div><div class="line"></div>
+              <div class="line"></div><div class="line"></div>
+            </div>
+          </div>
+          <div class="timeblock">
+            <h4 class="label">Night</h4>
+            <div class="box lines fill-lines">
+              <div class="line"></div><div class="line"></div><div class="line"></div>
+              <div class="line"></div><div class="line"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ============ Weekly template (two-page spread) ============ -->
+  <template id="tpl-weekly">
+    <div class="page weekly left">
+      <div class="hd">
+        <span class="title"><span class="mark"></span> Week of <span class="js-weekof"></span></span>
+        <span class="ornament"></span>
+      </div>
+      <h4 class="label">Top 3 This Week</h4>
+      <div class="box accent numbered lines">
+        <div class="line"><span class="num">1</span></div>
+        <div class="line"><span class="num">2</span></div>
+        <div class="line"><span class="num">3</span></div>
+      </div>
+      <div class="day-stack" style="margin-top:6px;">
+        <div class="day" data-offset="0"><span class="dn">Monday</span></div>
+        <div class="day" data-offset="1"><span class="dn">Tuesday</span></div>
+        <div class="day" data-offset="2"><span class="dn">Wednesday</span></div>
+        <div class="day" data-offset="3"><span class="dn">Thursday</span></div>
+      </div>
+    </div>
+
+    <div class="page weekly right">
+      <div class="hd">
+        <span class="ornament"></span>
+        <span class="title" style="font-size:12pt;">the week ahead</span>
+      </div>
+      <div class="day-stack">
+        <div class="day" data-offset="4"><span class="dn">Friday</span></div>
+        <div class="day" data-offset="5"><span class="dn">Saturday</span></div>
+        <div class="day" data-offset="6"><span class="dn">Sunday</span></div>
+        <div class="block">
+          <h4 class="label">Notes</h4>
+          <div class="box lines fill-lines">
+            <div class="line"></div><div class="line"></div><div class="line"></div>
+            <div class="line"></div><div class="line"></div><div class="line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ============ Monthly template (two-page spread) ============ -->
+  <template id="tpl-monthly">
+    <div class="page monthly left">
+      <div class="hd">
+        <span class="title"><span class="mark"></span> <span class="js-month"></span></span>
+        <span class="ornament"></span>
+      </div>
+      <div class="dow-row">
+        <div class="dow">Mon</div><div class="dow">Tue</div><div class="dow">Wed</div><div class="dow">Thu</div>
+      </div>
+      <div class="cal">
+        <div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div>
+        <div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div>
+        <div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div>
+        <div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div>
+        <div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div>
+        <div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div>
+      </div>
+    </div>
+
+    <div class="page monthly right">
+      <div class="hd">
+        <span class="ornament"></span>
+        <span class="ornament"></span>
+      </div>
+      <div class="dow-row">
+        <div class="dow">Fri</div>
+        <div class="dow">Sat</div>
+        <div class="dow">Sun</div>
+        <div class="dow" style="text-align:left; padding-left:4px; font-size:8.5pt; letter-spacing:1.6px;">Goals</div>
+      </div>
+      <div class="cal">
+        <div class="sidebar">
+          <div class="block">
+            <div class="box lines fill-lines">
+              <div class="line"></div><div class="line"></div><div class="line"></div>
+              <div class="line"></div><div class="line"></div><div class="line"></div>
+              <div class="line"></div><div class="line"></div><div class="line"></div>
+            </div>
+          </div>
+          <div class="block">
+            <h4 class="label">Notes</h4>
+            <div class="box lines fill-lines">
+              <div class="line"></div><div class="line"></div><div class="line"></div>
+              <div class="line"></div><div class="line"></div><div class="line"></div>
+              <div class="line"></div><div class="line"></div><div class="line"></div>
+            </div>
+          </div>
+        </div>
+        <div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div>
+        <div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div>
+        <div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div>
+        <div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div>
+        <div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div>
+        <div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div><div class="cell"><span class="daynum"></span></div>
+      </div>
+    </div>
+  </template>
+
+  <script src="js/planner.js"></script>
+  <script>Planner.initGenerator();</script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Monthly Planner</title>
+  <link rel="stylesheet" href="../styles/planner.css">
+  <style>
+    /* Monthly two-page spread: calendar runs across both sheets.
+       Left page = Sun-Wed, Right page = Thu-Sat + Goals/Notes sidebar.
+       Cells are one fixed width everywhere so the grid reads continuously. */
+    .monthly .dow-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+      flex: 0 0 auto;
+    }
+    .monthly .dow {
+      font-size: 7.5pt;
+      color: #a5794a;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-align: center;
+      padding: 2px 0;
+    }
+    .monthly .cal {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: 1fr;
+      gap: 2px;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    .monthly .cell {
+      position: relative;
+      border: 1px solid #ece3d2;
+      border-radius: 3px;
+      background: #fff;
+      padding: 2px 4px;
+      font-size: 8pt;
+      color: #b0a48f;
+    }
+    /* Small box in the top-left corner of each day to write the date number */
+    .monthly .cell::before {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 6mm;
+      height: 5mm;
+      border: 1px solid #e2d4bb;
+      border-radius: 2px;
+      background: #fbf7f0;
+    }
+    /* Sidebar: 4th column of the right page, spans all six rows */
+    .monthly .sidebar {
+      grid-column: 4;
+      grid-row: 1 / span 6;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-left: 4px;
+    }
+    .monthly .sidebar .block { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; }
+    .monthly .sidebar .block h4 { margin-top: 0; }
+    .monthly .sidebar .box { flex: 1 1 auto; }
+  </style>
+</head>
+<body>
+
+  <!-- Left page: Sun–Wed -->
+  <div class="page monthly left">
+    <div class="hd">
+      <span class="title">&#10086; ______________ 20____</span>
+      <span class="ornament"></span>
+    </div>
+
+    <div class="dow-row">
+      <div class="dow">Mon</div>
+      <div class="dow">Tue</div>
+      <div class="dow">Wed</div>
+      <div class="dow">Thu</div>
+    </div>
+
+    <div class="cal">
+      <!-- 6 rows x 4 columns -->
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+    </div>
+  </div>
+
+  <!-- Right page: Thu–Sat + Goals/Notes sidebar -->
+  <div class="page monthly right">
+    <div class="hd">
+      <span class="ornament"></span>
+      <span class="ornament"></span>
+    </div>
+
+    <div class="dow-row">
+      <div class="dow">Fri</div>
+      <div class="dow">Sat</div>
+      <div class="dow">Sun</div>
+      <div class="dow" style="text-align:left; padding-left:4px; font-size:8.5pt; letter-spacing:1.6px;">Goals</div>
+    </div>
+
+    <div class="cal">
+      <!-- Sidebar placed first so the 18 day cells auto-flow around column 4 -->
+      <div class="sidebar">
+        <div class="block">
+          <div class="box lines fill-lines">
+            <div class="line"></div><div class="line"></div><div class="line"></div>
+            <div class="line"></div><div class="line"></div><div class="line"></div>
+            <div class="line"></div><div class="line"></div><div class="line"></div>
+          </div>
+        </div>
+        <div class="block">
+          <h4 class="label">Notes</h4>
+          <div class="box lines fill-lines">
+            <div class="line"></div><div class="line"></div><div class="line"></div>
+            <div class="line"></div><div class="line"></div><div class="line"></div>
+            <div class="line"></div><div class="line"></div><div class="line"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 day columns x 6 rows = 18 cells, flowing around the sidebar -->
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+    </div>
+  </div>
+
+</body>
+</html>

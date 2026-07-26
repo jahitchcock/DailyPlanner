@@ -1,0 +1,58 @@
+<h2>Weekly spread + Monthly</h2>
+<p class="subtitle">Weekly = a two-page A5 spread (prints on two sheets, faces each other). Monthly = single A5. Confirm or tell me what to adjust.</p>
+
+<style>
+  .a5 { width: 230px; height: 325px; background: #fbf7f0; border: 1px solid #e0d5c3;
+        border-radius: 6px; padding: 12px; box-sizing: border-box; font-family: Georgia, serif;
+        color: #4a4038; box-shadow: 0 3px 8px rgba(0,0,0,.08); }
+  .a5 .hd { font-size: 11px; letter-spacing:.5px; border-bottom: 2px solid #c9a66b;
+        padding-bottom: 4px; margin-bottom: 6px; display:flex; justify-content:space-between; }
+  .a5 h4 { font-size: 8.5px; text-transform: uppercase; letter-spacing: 1.2px; color: #a5794a; margin: 4px 0 3px; }
+  .day { border:1px solid #e0d5c3; border-radius:4px; background:#fff; padding:3px 5px; margin-bottom:4px; height:34px; }
+  .day .dn { font-size:8px; color:#a5794a; text-transform:uppercase; letter-spacing:1px; }
+  .box { border:1px solid #e0d5c3; border-radius:4px; background:#fff; padding:5px; }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+  .cal .dow { font-size:7px; color:#a5794a; text-align:center; text-transform:uppercase; }
+  .cal .cell { border:1px solid #ece3d2; border-radius:2px; height:26px; font-size:8px; color:#b0a48f; padding:1px 3px; background:#fff; }
+  .lines div { border-bottom:1px dotted #ccbfa8; height:13px; }
+</style>
+
+<h3>Weekly — two-page spread</h3>
+<div style="display:flex;justify-content:center;gap:6px;padding:12px;background:#efe8dc;border-radius:6px;">
+  <div class="a5">
+    <div class="hd"><span>❦ Week of July 1</span><span style="color:#b89b6a">✿</span></div>
+    <div class="day"><span class="dn">Monday</span></div>
+    <div class="day"><span class="dn">Tuesday</span></div>
+    <div class="day"><span class="dn">Wednesday</span></div>
+    <div class="day"><span class="dn">Thursday</span></div>
+  </div>
+  <div class="a5">
+    <div class="hd"><span style="color:#b89b6a">✿</span><span>the week ahead</span></div>
+    <div class="day"><span class="dn">Friday</span></div>
+    <div class="day"><span class="dn">Saturday</span></div>
+    <div class="day"><span class="dn">Sunday</span></div>
+    <h4>Top 3 This Week</h4>
+    <div class="box lines"><div></div><div></div><div></div></div>
+    <h4>Notes</h4>
+    <div class="box lines"><div></div><div></div></div>
+  </div>
+</div>
+
+<h3 style="margin-top:16px;">Monthly — single page</h3>
+<div style="display:flex;justify-content:center;padding:12px;background:#efe8dc;border-radius:6px;">
+  <div class="a5" style="width:300px;height:340px;">
+    <div class="hd" style="font-size:13px;"><span>❦ July 2026</span><span style="color:#b89b6a">✿</span></div>
+    <div class="cal">
+      <div class="dow">S</div><div class="dow">M</div><div class="dow">T</div><div class="dow">W</div><div class="dow">T</div><div class="dow">F</div><div class="dow">S</div>
+      <div class="cell"></div><div class="cell"></div><div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell">4</div><div class="cell">5</div>
+      <div class="cell">6</div><div class="cell">7</div><div class="cell">8</div><div class="cell">9</div><div class="cell">10</div><div class="cell">11</div><div class="cell">12</div>
+      <div class="cell">13</div><div class="cell">14</div><div class="cell">15</div><div class="cell">16</div><div class="cell">17</div><div class="cell">18</div><div class="cell">19</div>
+      <div class="cell">20</div><div class="cell">21</div><div class="cell">22</div><div class="cell">23</div><div class="cell">24</div><div class="cell">25</div><div class="cell">26</div>
+      <div class="cell">27</div><div class="cell">28</div><div class="cell">29</div><div class="cell">30</div><div class="cell">31</div><div class="cell"></div><div class="cell"></div>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:6px;">
+      <div style="flex:1;"><h4>Monthly Goals</h4><div class="box lines"><div></div><div></div><div></div></div></div>
+      <div style="flex:1;"><h4>Notes</h4><div class="box lines"><div></div><div></div><div></div></div></div>
+    </div>
+  </div>
+</div>

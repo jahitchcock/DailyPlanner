@@ -1,0 +1,806 @@
+/* Paper Planner — shared style system
+   A5 portrait. Layout is fixed; look & feel comes from theme variables below.
+   Print to PDF from a browser. */
+
+/* ============ Theme variables ============
+   Default = "Cottage" (warm cream & gold). Other themes override these on <body>. */
+:root {
+  --font-body: "Lora", Georgia, "Times New Roman", serif;
+  --font-weight: 400;
+  --ink: #4a4038;
+  --muted: #8a7d6b;
+  --bg: #fbf7f0;
+  --accent: #c9a66b;
+  --accent-soft: #a5794a;
+  --accent-deep: #b89b6a;
+  --box-bg: #ffffff;
+  --box-border: #e0d5c3;
+  --accent-bg: #f7efe0;
+  --accent-border: #e2cea6;
+  --line: #ccbfa8;
+  --line-solid: #e5dcc9;
+  --cell-border: #ece3d2;
+  --cell-num: #b0a48f;
+  --daynum-border: #e2d4bb;
+  --daynum-bg: #fbf7f0;
+  --daynum-ink: #8a7d6b;
+  --blank-bg: #f7f2e8;
+  --screen-bg: #d9cebb;
+  --mark: "\2766";      /* ❦ floral heart */
+  --ornament: "\273F";  /* ✿ black florette */
+  --quote: "\201C";     /* “ */
+  --watermark: var(--mark);   /* large faint glyph on blank pages; follows the theme mark */
+}
+
+body.theme-ocean {
+  --font-body: "Josefin Sans", "Segoe UI", sans-serif;
+  --ink: #2f4a54;
+  --muted: #5c7b84;
+  --bg: #f3f8fa;
+  --accent: #4a90a4;
+  --accent-soft: #35707f;
+  --accent-deep: #5a9db0;
+  --box-bg: #ffffff;
+  --box-border: #cfe0e6;
+  --accent-bg: #e5f0f4;
+  --accent-border: #bcd8e0;
+  --line: #bcd2da;
+  --line-solid: #d6e6ec;
+  --cell-border: #d8e6ea;
+  --cell-num: #8bacb6;
+  --daynum-border: #c4dbe2;
+  --daynum-bg: #eef6f9;
+  --daynum-ink: #4a7a86;
+  --blank-bg: #eaf2f5;
+  --screen-bg: #b9cdd4;
+  --mark: "\f13d";      /* FA anchor */
+  --ornament: "\f773";  /* FA water waves */
+}
+
+body.theme-blossom {
+  --font-body: "Cormorant Garamond", Georgia, serif;
+  --ink: #5a3d47;
+  --muted: #9a7883;
+  --bg: #fdf5f7;
+  --accent: #d08aa0;
+  --accent-soft: #b56b83;
+  --accent-deep: #dba0b3;
+  --box-bg: #ffffff;
+  --box-border: #efd6de;
+  --accent-bg: #fbe9ee;
+  --accent-border: #f0cdd8;
+  --line: #ecccd6;
+  --line-solid: #f3dee5;
+  --cell-border: #f2dde3;
+  --cell-num: #cba3b0;
+  --daynum-border: #eecdd6;
+  --daynum-bg: #fdf1f4;
+  --daynum-ink: #b56b83;
+  --blank-bg: #faedf1;
+  --screen-bg: #e6c6d1;
+  --mark: "\2740";      /* ❀ white florette */
+  --ornament: "\2741";  /* ❁ florette outline */
+}
+
+body.theme-forest {
+  --font-body: "Merriweather", Georgia, serif;
+  --ink: #37432f;
+  --muted: #6d7a5f;
+  --bg: #f3f6ee;
+  --accent: #7a9a5e;
+  --accent-soft: #5f7d45;
+  --accent-deep: #8aa870;
+  --box-bg: #ffffff;
+  --box-border: #d8e2cc;
+  --accent-bg: #eaf1e1;
+  --accent-border: #cfdcbe;
+  --line: #cad8ba;
+  --line-solid: #dde7d0;
+  --cell-border: #dde6d2;
+  --cell-num: #a5b592;
+  --daynum-border: #cbdaba;
+  --daynum-bg: #eff5e9;
+  --daynum-ink: #5f7d45;
+  --blank-bg: #ecf1e4;
+  --screen-bg: #c6d3b6;
+  --mark: "\f1bb";      /* FA tree */
+  --ornament: "\2618";  /* ☘ shamrock */
+}
+
+body.theme-noir {
+  --font-body: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  --ink: #2b2b2b;
+  --muted: #777777;
+  --bg: #fafafa;
+  --accent: #8a8a8a;
+  --accent-soft: #555555;
+  --accent-deep: #9a9a9a;
+  --box-bg: #ffffff;
+  --box-border: #dddddd;
+  --accent-bg: #f0f0f0;
+  --accent-border: #d2d2d2;
+  --line: #d6d6d6;
+  --line-solid: #e4e4e4;
+  --cell-border: #e2e2e2;
+  --cell-num: #aaaaaa;
+  --daynum-border: #d5d5d5;
+  --daynum-bg: #f4f4f4;
+  --daynum-ink: #555555;
+  --blank-bg: #f1f1f1;
+  --screen-bg: #cccccc;
+  --mark: "\25C6";      /* ◆ */
+  --ornament: "\2022";  /* • */
+}
+
+body.theme-midnight {
+  --font-body: "Playfair Display", Georgia, serif;
+  --ink: #26304a; --muted: #5f6a86; --bg: #f4f6fb;
+  --accent: #3b4a6b; --accent-soft: #2e3c5a; --accent-deep: #566a94;
+  --box-bg: #ffffff; --box-border: #d5dbe8; --accent-bg: #e9edf6; --accent-border: #c6cfe2;
+  --line: #cbd3e4; --line-solid: #dde3f0; --cell-border: #dde2ee; --cell-num: #9aa4be;
+  --daynum-border: #c9d2e6; --daynum-bg: #eef1f9; --daynum-ink: #3b4a6b; --blank-bg: #eef0f7;
+  --screen-bg: #c3ccdf;
+  --mark: "\f186"; --ornament: "\2726";   /* FA moon · ✦ */
+}
+
+body.theme-sunset {
+  --font-body: "Quicksand", "Segoe UI", sans-serif;
+  --ink: #5a3a2e; --muted: #946a58; --bg: #fef6f0;
+  --accent: #e08a5c; --accent-soft: #c46a3e; --accent-deep: #eaa074;
+  --box-bg: #ffffff; --box-border: #f0d8c8; --accent-bg: #fceadd; --accent-border: #f3cfb8;
+  --line: #f0d0bd; --line-solid: #f6e0d2; --cell-border: #f3ddce; --cell-num: #d3a68d;
+  --daynum-border: #f0cdb6; --daynum-bg: #fdf2ea; --daynum-ink: #c46a3e; --blank-bg: #fcefe6;
+  --screen-bg: #e8c3aa;
+  --mark: "\2600"; --ornament: "\273A";
+}
+
+body.theme-lavender {
+  --font-body: "Raleway", "Segoe UI", sans-serif;
+  --ink: #47395a; --muted: #7d6f92; --bg: #f7f4fb;
+  --accent: #9b7bc4; --accent-soft: #7d5da8; --accent-deep: #ac90ce;
+  --box-bg: #ffffff; --box-border: #e2d8ef; --accent-bg: #f0e9f9; --accent-border: #d8c9ec;
+  --line: #ddd0ef; --line-solid: #e8def4; --cell-border: #e6ddf1; --cell-num: #b3a3cc;
+  --daynum-border: #dccdee; --daynum-bg: #f4eefa; --daynum-ink: #7d5da8; --blank-bg: #f1ecf8;
+  --screen-bg: #cdc0e0;
+  --mark: "\273E"; --ornament: "\f72b";   /* ✾ · FA wand-sparkles */
+}
+
+body.theme-mint {
+  --font-body: "Nunito", "Segoe UI", sans-serif;
+  --ink: #2f4a42; --muted: #5f8078; --bg: #f0f8f5;
+  --accent: #4faf92; --accent-soft: #3a8f74; --accent-deep: #69c0a6;
+  --box-bg: #ffffff; --box-border: #cfe8df; --accent-bg: #e2f3ed; --accent-border: #bce0d3;
+  --line: #c8e2d9; --line-solid: #daece5; --cell-border: #d6e9e2; --cell-num: #93bdb0;
+  --daynum-border: #c6e2d6; --daynum-bg: #eef7f3; --daynum-ink: #3a8f74; --blank-bg: #eaf4f0;
+  --screen-bg: #b6d6cb;
+  --mark: "\f4d8"; --ornament: "\273F";   /* FA seedling · ✿ */
+}
+
+body.theme-sepia {
+  --font-body: "Special Elite", "Courier New", monospace;
+  --ink: #4a3f2f; --muted: #8a7a5f; --bg: #f6efe1;
+  --accent: #a98545; --accent-soft: #8a6a34; --accent-deep: #bb9a63;
+  --box-bg: #fffdf8; --box-border: #ddceb0; --accent-bg: #efe4cc; --accent-border: #d8c39a;
+  --line: #d5c4a2; --line-solid: #e2d6ba; --cell-border: #e0d3b6; --cell-num: #b3a17f;
+  --daynum-border: #d8c6a0; --daynum-bg: #f3ead6; --daynum-ink: #8a6a34; --blank-bg: #efe6d2;
+  --screen-bg: #d9caa9;
+  --mark: "\f56b"; --ornament: "\2767";   /* FA quill · ❧ */
+}
+
+/* Deliberately plain: white paper, black text, thin gray lines, no ornaments */
+body.theme-bw {
+  --font-body: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  --ink: #000000; --muted: #666666; --bg: #ffffff;
+  --accent: #333333; --accent-soft: #444444; --accent-deep: #333333;
+  --box-bg: #ffffff; --box-border: #cccccc; --accent-bg: #f2f2f2; --accent-border: #cccccc;
+  --line: #cccccc; --line-solid: #dddddd; --cell-border: #cccccc; --cell-num: #999999;
+  --daynum-border: #cccccc; --daynum-bg: #f7f7f7; --daynum-ink: #000000; --blank-bg: #f5f5f5;
+  --screen-bg: #dddddd;
+  --mark: ""; --ornament: ""; --quote: "\201C"; --watermark: "";
+}
+
+/* ---- Page / print setup ---- */
+@page {
+  size: A5 portrait;
+  margin: 0;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  font-weight: var(--font-weight);
+  color: var(--ink);
+  background: var(--screen-bg); /* backdrop when viewed on screen; not printed */
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* A single A5 sheet */
+.page {
+  width: 148mm;
+  height: 210mm;
+  background: var(--bg);
+  padding: 12mm 11mm;
+  margin: 8mm auto;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---- Header ---- */
+.hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+  flex: 0 0 auto;
+}
+.hd .title {
+  font-size: 15pt;
+  letter-spacing: 0.5px;
+}
+.hd .mark { color: var(--accent-deep); }
+.hd .mark::before { content: var(--mark); }
+.hd .ornament {
+  color: var(--accent-deep);
+  font-size: 14pt;
+}
+.hd .ornament::before { content: var(--ornament); }
+/* Icon glyphs fall back through Font Awesome, the body font, then emoji, so
+   a value can be an FA icon, a dingbat, or an emoji. */
+.hd .mark::before,
+.hd .ornament::before {
+  font-family: "Font Awesome 6 Free", var(--font-body), "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
+  font-weight: 900;
+}
+
+/* ---- Section labels ---- */
+h4.label {
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  color: var(--accent-soft);
+  font-weight: normal;
+  margin: 8px 0 4px;
+}
+
+/* ---- Boxes ---- */
+.box {
+  border: 1px solid var(--box-border);
+  border-radius: 4px;
+  background: var(--box-bg);
+  padding: 6px 9px;
+}
+.box.accent {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+}
+
+/* ---- Guide lines ---- */
+.lines > .line {
+  border-bottom: 1px dotted var(--line);
+  height: 7mm;
+  display: flex;
+  align-items: center;
+}
+.lines > .line:last-child { border-bottom: none; }
+
+.numbered > .line { border-bottom: 1px solid var(--line-solid); }
+.num {
+  color: var(--accent);
+  font-size: 9pt;
+  width: 14px;
+  flex: 0 0 auto;
+}
+.check {
+  color: var(--accent);
+  font-size: 10pt;
+  width: 16px;
+  flex: 0 0 auto;
+}
+
+/* ---- Layout helpers ---- */
+.cols { display: flex; gap: 8px; }
+.cols > * { flex: 1; min-width: 0; }
+.grow { flex: 1 1 auto; }
+.fill-lines { display: flex; flex-direction: column; }
+.fill-lines > .line { flex: 1 1 auto; }
+
+/* ============ Daily layout ============ */
+.daily .cols { flex: 1 1 auto; min-height: 0; }
+.daily .col { display: flex; flex-direction: column; min-height: 0; }
+
+.daily .mood { font-style: italic; color: var(--muted); }
+.daily .mood .box {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  min-height: 15mm;
+  display: flex;
+  align-items: center;
+}
+.daily .mood .box::before {
+  content: var(--quote);
+  font-size: 22pt;
+  color: var(--accent);
+  line-height: 0;
+  margin-right: 4px;
+}
+.daily .timeblock { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; }
+.daily .timeblock .box { flex: 1 1 auto; }
+.daily .reflect { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.daily .reflect .box { flex: 1 1 auto; min-height: 22mm; }
+
+/* ============ Weekly layout ============ */
+.weekly .day {
+  border: 1px solid var(--box-border);
+  border-radius: 4px;
+  background: var(--box-bg);
+  padding: 4px 8px;
+  margin-bottom: 6px;
+}
+.weekly .day .dn {
+  font-size: 8.5pt;
+  color: var(--accent-soft);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+.weekly .day-stack {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.weekly .day-stack > .day,
+.weekly .day-stack > .block { flex: 1 1 0; min-height: 0; }
+.weekly .block { display: flex; flex-direction: column; margin-bottom: 6px; }
+.weekly .block .box { flex: 1 1 auto; }
+.weekly .block h4.label { margin-top: 0; }
+
+/* ============ Monthly layout ============ */
+.monthly .dow-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  flex: 0 0 auto;
+}
+.monthly .dow {
+  font-size: 7.5pt;
+  color: var(--accent-soft);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+  padding: 2px 0;
+}
+.monthly .cal {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.monthly .cell {
+  position: relative;
+  border: 1px solid var(--cell-border);
+  border-radius: 3px;
+  background: var(--box-bg);
+  padding: 2px 4px;
+  font-size: 8pt;
+  color: var(--cell-num);
+}
+/* Corner box for the date number (JS fills it; blank on template) */
+.monthly .daynum {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 6mm;
+  height: 5mm;
+  box-sizing: border-box;
+  border: 1px solid var(--daynum-border);
+  border-radius: 2px;
+  background: var(--daynum-bg);
+  font-size: 7.5pt;
+  line-height: 5mm;
+  text-align: center;
+  color: var(--daynum-ink);
+}
+.monthly .cell.blank { background: var(--blank-bg); }
+.monthly .cell.blank .daynum { display: none; }
+.monthly .sidebar {
+  grid-column: 4;
+  grid-row: 1 / span 6;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 4px;
+}
+.monthly .sidebar .block { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; }
+.monthly .sidebar .block h4 { margin-top: 0; }
+.monthly .sidebar .box { flex: 1 1 auto; }
+
+/* ============ Generator controls (screen only) ============ */
+.panel-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: flex-start;
+  margin: 10mm auto 0;
+}
+.controls {
+  max-width: 148mm;
+  margin: 10mm auto 0;
+  padding: 14px 18px;
+  background: var(--bg);
+  border: 1px solid var(--box-border);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  color: var(--ink);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+.controls h1 {
+  font-size: 15pt;
+  font-weight: normal;
+  margin: 0 0 10px;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 6px;
+}
+.controls .row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin: 8px 0; }
+.controls label { font-size: 10pt; }
+.controls input[type="date"],
+.controls select {
+  font-family: var(--font-body);
+  font-size: 10pt;
+  padding: 3px 6px;
+  border: 1px solid var(--box-border);
+  border-radius: 4px;
+  background: var(--box-bg);
+  color: var(--ink);
+}
+.controls .checks label { margin-right: 14px; }
+.controls button {
+  font-family: var(--font-body);
+  font-size: 10pt;
+  padding: 6px 16px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+.controls button.secondary { background: var(--box-bg); color: var(--accent-soft); }
+.controls button:disabled { opacity: 0.45; cursor: not-allowed; }
+.controls .status { font-size: 9pt; color: var(--muted); margin-top: 6px; }
+.controls .hint { font-size: 8.5pt; color: var(--muted); margin-top: 4px; }
+.panel-row .controls { margin: 0; }
+
+/* ---- Custom theme panel ---- */
+/* Pinned to the right edge so it sits beside the pages and scrolls with them,
+   instead of crowding the centered control panel. */
+.custom-panel {
+  position: fixed;
+  top: 10mm;
+  right: 12px;
+  /* Fill the right side: start just past a centered A5 page, keep a min width */
+  left: min(calc(50% + 80mm), calc(100% - 380px));
+  z-index: 20;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 14px 18px;
+  background: var(--bg);
+  border: 1px solid var(--box-border);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  color: var(--ink);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+.custom-panel h2 {
+  font-size: 13pt;
+  font-weight: normal;
+  margin: 0 0 8px;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 5px;
+}
+.custom-panel h3 {
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: var(--accent-soft);
+  font-weight: normal;
+  margin: 12px 0 6px;
+}
+/* Top sections laid out in columns to use the panel width */
+.custom-panel .custom-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 28px;
+  align-items: flex-start;
+}
+.custom-panel .custom-top .col { flex: 1 1 200px; min-width: 180px; }
+.custom-panel .custom-top .col.col-glyphs { flex: 1.4 1 260px; }
+.custom-panel .custom-top .col h3:first-child { margin-top: 4px; }
+.custom-panel .field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 4px 0;
+  font-size: 9pt;
+}
+/* Simple 3-color picker: prominent swatches */
+.custom-panel .adv-toggle {
+  margin: 8px 0 2px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--accent-soft);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 9pt;
+  text-decoration: underline;
+}
+/* Advanced colors: two columns to use the wider panel */
+.custom-panel .adv-colors {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px 20px;
+  margin: 2px 0 4px;
+}
+.custom-panel .adv-colors[hidden] { display: none; }
+.custom-panel .adv-colors .field { margin: 2px 0; }
+/* Color control: visible swatch + hidden native input */
+.color-ctl { position: relative; display: inline-flex; }
+.color-ctl .swatch {
+  width: 34px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--box-border);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.color-ctl .color-native {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.simple-colors .color-ctl .swatch { width: 44px; height: 26px; }
+
+/* 256-color popup */
+.color-pop {
+  position: absolute;
+  z-index: 60;
+  background: #ffffff;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.28);
+}
+.color-pop .color-grid {
+  display: grid;
+  grid-template-columns: repeat(16, 15px);
+  gap: 2px;
+}
+.color-pop .sw {
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.color-pop .sw:hover { outline: 2px solid #333; outline-offset: -1px; }
+.color-pop .more {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 5px 8px;
+  font-family: Georgia, serif;
+  font-size: 9pt;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  background: #f4f4f4;
+  color: #333;
+  cursor: pointer;
+}
+.custom-panel select,
+.custom-panel input[type="text"] {
+  font-family: var(--font-body);
+  font-size: 9pt;
+  padding: 3px 6px;
+  border: 1px solid var(--box-border);
+  border-radius: 4px;
+  background: var(--box-bg);
+  color: var(--ink);
+}
+.custom-panel .glyph-in {
+  width: 46px;
+  text-align: center;
+  font-family: "Font Awesome 6 Free", var(--font-body), "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
+  font-weight: 900;
+}
+/* Glyph rows: big live preview + label + input, with active highlight */
+.custom-panel .glyph-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0;
+  padding: 5px 7px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+.custom-panel .glyph-row.active {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+.custom-panel .glyph-preview {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  border: 1px solid var(--box-border);
+  border-radius: 5px;
+  background: var(--box-bg);
+  color: var(--accent-deep);
+  cursor: pointer;
+  font-family: "Font Awesome 6 Free", var(--font-body), "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
+  font-weight: 900;
+}
+.custom-panel .glyph-label { flex: 1 1 auto; font-size: 9pt; }
+.custom-panel .glyph-filter {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 8px;
+  font-family: var(--font-body);
+  font-size: 9pt;
+  padding: 4px 8px;
+  border: 1px solid var(--box-border);
+  border-radius: 4px;
+  background: var(--box-bg);
+  color: var(--ink);
+}
+.custom-panel .palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.custom-panel .palette button {
+  width: 30px;
+  height: 30px;
+  font-size: 14px;
+  line-height: 1;
+  border: 1px solid var(--box-border);
+  border-radius: 4px;
+  background: var(--box-bg);
+  color: var(--ink);
+  cursor: pointer;
+  font-family: "Font Awesome 6 Free", var(--font-body), "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
+  font-weight: 900;
+}
+.custom-panel .palette button:hover { border-color: var(--accent); }
+.custom-panel .row-actions { margin-top: 10px; }
+.custom-panel button.reset {
+  font-family: var(--font-body);
+  font-size: 9pt;
+  padding: 5px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: var(--box-bg);
+  color: var(--accent-soft);
+  cursor: pointer;
+}
+
+/* Assembly instructions for cut-and-stack (screen only) */
+.assembly {
+  max-width: 148mm;
+  margin: 8mm auto 0;
+  padding: 12px 20px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+.assembly h2 {
+  font-size: 12pt;
+  font-weight: normal;
+  margin: 0 0 6px;
+  color: var(--accent-soft);
+}
+.assembly ol { margin: 0; padding-left: 20px; }
+.assembly li { font-size: 9.5pt; margin: 3px 0; line-height: 1.4; }
+
+/* Blank pages get a large, faint, theme-matched watermark — decorative but
+   out of the way if the user writes on the page. */
+.blank-page { position: relative; }
+.blank-page::before {
+  content: var(--watermark);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: "Font Awesome 6 Free", var(--font-body), "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
+  font-weight: 900;
+  font-size: 80mm;
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+/* ============ 2-up tiling (landscape sheet, cut in half) ============ */
+.sheet {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 8mm auto;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+.sheet .page {
+  margin: 0;
+  box-shadow: none;
+}
+/* Each page sits in a half-sheet slot; JS may scale the page to fit it. */
+.sheet .slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+.sheet .slot .page { transform-origin: center center; flex: 0 0 auto; }
+/* Dashed cut guide down the center, between the two pages */
+.sheet.cut::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  border-left: 1px dashed #b9b0a0;
+}
+
+/* ---- Print ---- */
+@media print {
+  body { background: #fff; }
+  .panel-row,
+  .controls,
+  .custom-panel,
+  .color-pop,
+  .assembly { display: none !important; }
+  .page {
+    margin: 0;
+    box-shadow: none;
+    page-break-after: always;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* When tiled, the SHEET is the printed page; its inner pages don't break */
+  .sheet {
+    margin: 0;
+    box-shadow: none;
+    page-break-after: always;
+  }
+  .sheet:last-child { page-break-after: auto; }
+  .sheet .page { page-break-after: auto; }
+}
