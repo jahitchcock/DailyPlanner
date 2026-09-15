@@ -95,6 +95,17 @@
     return n;
   }
 
+  function renderInserts(inserts, mount) {
+    if (!inserts) return;
+    INSERT_KEYS.forEach(function (key) {
+      var n = inserts[key] || 0;
+      for (var i = 0; i < n; i++) {
+        var f = clone(key);
+        mount.appendChild(f.querySelector('.page'));
+      }
+    });
+  }
+
   function fillMonth(frag, monthDate) {
     var y = monthDate.getFullYear(), m = monthDate.getMonth();
     frag.querySelector('.js-month').textContent = MONTHS[m] + ' ' + y;
@@ -125,13 +136,39 @@
 
   // ---- orchestration ----
 
-  var RENDERERS = { monthly: renderMonthly, weekly: renderWeekly, daily: renderDaily };
-  var ORDER = ['monthly', 'weekly', 'daily'];   // overview first, then detail
+  var INSERT_KEYS = ['brain-dump', 'collections', 'sketch', 'expense-log', 'future-log', 'project'];
+
+  var UNIT_NAMES = {
+    monthly: 'month spreads', weekly: 'week spreads', daily: 'day pages',
+    thanks: 'thankfulness pages', 'habit-tracker': 'habit trackers',
+    'one-line': 'one-line pages', 'mood-tracker': 'mood trackers',
+    'weekly-review': 'weekly reviews'
+  };
+
+  function buildThanksPage(d)       { var e = document.createElement('div'); e.className = 'page'; return e; }
+  function buildHabitTrackerPage(m) { var e = document.createElement('div'); e.className = 'page'; return e; }
+  function buildOneLinePage(m)      { var e = document.createElement('div'); e.className = 'page'; return e; }
+  function buildMoodTrackerPage(m)  { var e = document.createElement('div'); e.className = 'page'; return e; }
+  function buildWeeklyReviewPage(m) { var e = document.createElement('div'); e.className = 'page'; return e; }
+  function renderThanks(start, end, mount)       { return 0; }
+  function renderHabitTracker(start, end, mount) { return 0; }
+  function renderOneLine(start, end, mount)      { return 0; }
+  function renderMoodTracker(start, end, mount)  { return 0; }
+  function renderWeeklyReview(start, end, mount) { return 0; }
+
+  var RENDERERS = {
+    monthly: renderMonthly, weekly: renderWeekly, daily: renderDaily,
+    thanks: renderThanks, 'habit-tracker': renderHabitTracker,
+    'one-line': renderOneLine, 'mood-tracker': renderMoodTracker,
+    'weekly-review': renderWeeklyReview
+  };
+  var ORDER = ['monthly', 'weekly', 'daily', 'thanks', 'habit-tracker', 'one-line', 'mood-tracker', 'weekly-review'];
 
   // Build the chronological reading order for 2-sided printing:
   // leading blank (so months start on page 2), all month spreads,
   // then per week: the week spread followed by that week's day pages.
   // Blanks pad before any spread that wouldn't start on a facing (even) page.
+  // Date-driven extras append after core pages; inserts are handled in generate().
   function buildDuplexOrder(types, start, end) {
     var items = [];
     if (types.indexOf('monthly') !== -1) {
@@ -143,6 +180,21 @@
         eachDayInWeek(m, start, end, function (d) { items.push({ single: buildDailyPage(d) }); });
       }
     });
+    if (types.indexOf('thanks') !== -1) {
+      for (var dd = new Date(start); dd <= end; dd = addDays(dd, 1)) items.push({ single: buildThanksPage(dd) });
+    }
+    if (types.indexOf('habit-tracker') !== -1) {
+      eachMonth(start, end, function (cur) { items.push({ single: buildHabitTrackerPage(cur) }); });
+    }
+    if (types.indexOf('one-line') !== -1) {
+      eachMonth(start, end, function (cur) { items.push({ single: buildOneLinePage(cur) }); });
+    }
+    if (types.indexOf('mood-tracker') !== -1) {
+      eachMonth(start, end, function (cur) { items.push({ single: buildMoodTrackerPage(cur) }); });
+    }
+    if (types.indexOf('weekly-review') !== -1) {
+      eachWeek(start, end, function (m) { items.push({ single: buildWeeklyReviewPage(m) }); });
+    }
 
     var pages = [blankPage()];   // page 1 blank → content starts on page 2
     items.forEach(function (it) {
@@ -176,16 +228,28 @@
     }
   }
 
-  function generate(types, start, end, tile, duplex) {
+  function generate(types, start, end, tile, duplex, inserts) {
     var mount = document.getElementById('pages');
     mount.innerHTML = '';
     var help = document.getElementById('assembly');
     if (help) help.hidden = !(duplex && tile);
-    if (!start || !end || start > end) { setStatus('Pick a start date on or before the end date.'); return; }
-    if (!types.length) { setStatus('Select at least one layout.'); return; }
+
+    var hasInserts = inserts && INSERT_KEYS.some(function (k) { return (inserts[k] || 0) > 0; });
+
+    if (types.length > 0 && (!start || !end || start > end)) {
+      setStatus('Pick a start date on or before the end date.'); return;
+    }
+    if (!types.length && !hasInserts) { setStatus('Select at least one layout or add some inserts.'); return; }
 
     if (duplex) {
       var seq = buildDuplexOrder(types, start, end);
+      if (hasInserts) {
+        INSERT_KEYS.forEach(function (key) {
+          var n = inserts[key] || 0;
+          for (var i = 0; i < n; i++) { var ff = clone(key); seq.push(ff.querySelector('.page')); }
+        });
+        while (seq.length % 2 !== 0) seq.push(blankPage());
+      }
       var real = seq.filter(function (p) { return !p.classList.contains('blank-page'); }).length;
       if (tile) {
         layoutCutStack(mount, seq);
@@ -203,9 +267,16 @@
     ORDER.forEach(function (type) {
       if (types.indexOf(type) === -1) return;
       var n = RENDERERS[type](start, end, mount);
-      var unit = type === 'daily' ? 'day pages' : (type === 'monthly' ? 'month spreads' : 'week spreads');
-      parts.push(n + ' ' + unit);
+      parts.push(n + ' ' + (UNIT_NAMES[type] || type));
     });
+
+    renderInserts(inserts, mount);
+    if (hasInserts) {
+      INSERT_KEYS.forEach(function (k) {
+        var n = inserts[k] || 0;
+        if (n) parts.push(n + ' ' + k.replace(/-/g, ' ') + (n > 1 ? 's' : ''));
+      });
+    }
 
     var sheetNote = '';
     if (tile) {
