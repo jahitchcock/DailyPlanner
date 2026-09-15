@@ -145,16 +145,86 @@
     'weekly-review': 'weekly reviews'
   };
 
-  function buildThanksPage(d)       { var e = document.createElement('div'); e.className = 'page'; return e; }
-  function buildHabitTrackerPage(m) { var e = document.createElement('div'); e.className = 'page'; return e; }
-  function buildOneLinePage(m)      { var e = document.createElement('div'); e.className = 'page'; return e; }
-  function buildMoodTrackerPage(m)  { var e = document.createElement('div'); e.className = 'page'; return e; }
-  function buildWeeklyReviewPage(m) { var e = document.createElement('div'); e.className = 'page'; return e; }
-  function renderThanks(start, end, mount)       { return 0; }
-  function renderHabitTracker(start, end, mount) { return 0; }
-  function renderOneLine(start, end, mount)      { return 0; }
-  function renderMoodTracker(start, end, mount)  { return 0; }
-  function renderWeeklyReview(start, end, mount) { return 0; }
+  function buildThanksPage(d) {
+    var f = clone('thanks');
+    f.querySelector('.js-date').textContent = fmtLong(d);
+    return f.querySelector('.page');
+  }
+  function renderThanks(start, end, mount) {
+    var n = 0;
+    for (var d = new Date(start); d <= end; d = addDays(d, 1)) { mount.appendChild(buildThanksPage(d)); n++; }
+    return n;
+  }
+
+  function buildHabitTrackerPage(monthDate) {
+    var f = clone('habit-tracker');
+    f.querySelector('.js-month').textContent = MONTHS[monthDate.getMonth()] + ' ' + monthDate.getFullYear();
+    var daysIn = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate();
+    var grid = f.querySelector('.ht-grid');
+    var html = '<div class="ht-cell ht-corner"></div>';
+    for (var h = 0; h < 7; h++) html += '<div class="ht-cell col-head"></div>';
+    for (var d = 1; d <= 31; d++) {
+      var bl = d > daysIn ? ' blank' : '';
+      html += '<div class="ht-cell day-num' + bl + '">' + (d <= daysIn ? d : '') + '</div>';
+      for (var c = 0; c < 7; c++) html += '<div class="ht-cell' + bl + '"></div>';
+    }
+    grid.innerHTML = html;
+    return f.querySelector('.page');
+  }
+  function renderHabitTracker(start, end, mount) {
+    var n = 0;
+    eachMonth(start, end, function (cur) { mount.appendChild(buildHabitTrackerPage(cur)); n++; });
+    return n;
+  }
+
+  function buildOneLinePage(monthDate) {
+    var f = clone('one-line');
+    f.querySelector('.js-month').textContent = MONTHS[monthDate.getMonth()] + ' ' + monthDate.getFullYear();
+    var daysIn = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate();
+    var entries = f.querySelector('.ol-entries');
+    var html = '';
+    for (var d = 1; d <= 31; d++) {
+      var bl = d > daysIn ? ' blank' : '';
+      html += '<div class="ol-entry' + bl + '"><span class="ol-num">' + (d <= daysIn ? d : '') + '</span><div class="ol-line"></div></div>';
+    }
+    entries.innerHTML = html;
+    return f.querySelector('.page');
+  }
+  function renderOneLine(start, end, mount) {
+    var n = 0;
+    eachMonth(start, end, function (cur) { mount.appendChild(buildOneLinePage(cur)); n++; });
+    return n;
+  }
+
+  function buildMoodTrackerPage(monthDate) {
+    var f = clone('mood-tracker');
+    f.querySelector('.js-month').textContent = MONTHS[monthDate.getMonth()] + ' ' + monthDate.getFullYear();
+    var daysIn = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate();
+    var grid = f.querySelector('.mt-grid');
+    var html = '';
+    for (var d = 1; d <= 31; d++) {
+      var bl = d > daysIn ? ' blank' : '';
+      html += '<div class="mt-cell' + bl + '"><span class="mt-num">' + (d <= daysIn ? d : '') + '</span></div>';
+    }
+    grid.innerHTML = html;
+    return f.querySelector('.page');
+  }
+  function renderMoodTracker(start, end, mount) {
+    var n = 0;
+    eachMonth(start, end, function (cur) { mount.appendChild(buildMoodTrackerPage(cur)); n++; });
+    return n;
+  }
+
+  function buildWeeklyReviewPage(m) {
+    var f = clone('weekly-review');
+    f.querySelector('.js-weekof').textContent = fmtMD(m) + ', ' + m.getFullYear();
+    return f.querySelector('.page');
+  }
+  function renderWeeklyReview(start, end, mount) {
+    var n = 0;
+    eachWeek(start, end, function (m) { mount.appendChild(buildWeeklyReviewPage(m)); n++; });
+    return n;
+  }
 
   var RENDERERS = {
     monthly: renderMonthly, weekly: renderWeekly, daily: renderDaily,
