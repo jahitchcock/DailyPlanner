@@ -931,6 +931,7 @@
 
   // ---- paper / output sizing (portrait, mm) ----
   var SIZES = {
+    Mini:   { w: 81,    h: 120 },
     A6:     { w: 105,   h: 148 },
     A5:     { w: 148,   h: 210 },
     A4:     { w: 210,   h: 297 },
@@ -979,6 +980,7 @@
 
   function validateSizes(outSel, paperSel, printBtn, note, tile) {
     var out = SIZES[outSel.value];
+    document.body.classList.toggle('size-mini', outSel.value === 'Mini');
     // Disable paper options that can't hold the chosen planner size (given the mode).
     for (var i = 0; i < paperSel.options.length; i++) {
       var o = paperSel.options[i];
