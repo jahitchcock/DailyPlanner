@@ -806,6 +806,10 @@ h4.label {
   .sheet .page { page-break-after: auto; }
 }
 
+/* ============ New page types — control panel ============ */
+.ins-count { width: 2.8em; text-align: center; margin-left: 2px; }
+.inserts-row label { white-space: nowrap; }
+
 /* ============ Mini (Pocket/A7, 81×120 mm) ============ */
 
 /* Left binding margin — keeps content clear of the 6-ring punch zone */

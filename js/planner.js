@@ -1150,11 +1150,16 @@
 
       var run = function () {
         var types = [];
-        ['daily', 'weekly', 'monthly'].forEach(function (t) {
+        ['monthly', 'weekly', 'daily', 'thanks', 'habit-tracker', 'one-line', 'mood-tracker', 'weekly-review'].forEach(function (t) {
           var box = document.getElementById('chk-' + t);
           if (box && box.checked) types.push(t);
         });
-        generate(types, parse(startEl.value), parse(endEl.value), tileOn(), !!(duplexEl && duplexEl.checked));
+        var inserts = {};
+        INSERT_KEYS.forEach(function (k) {
+          var el = document.getElementById('ins-' + k);
+          inserts[k] = el ? (parseInt(el.value, 10) || 0) : 0;
+        });
+        generate(types, parse(startEl.value), parse(endEl.value), tileOn(), !!(duplexEl && duplexEl.checked), inserts);
       };
 
       if (outSel && paperSel) {
