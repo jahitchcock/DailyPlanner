@@ -232,6 +232,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 /* ---- Header ---- */
@@ -803,4 +804,31 @@ h4.label {
   }
   .sheet:last-child { page-break-after: auto; }
   .sheet .page { page-break-after: auto; }
+}
+
+/* ============ Mini (Pocket/A7, 81×120 mm) ============ */
+
+/* Left binding margin — keeps content clear of the 6-ring punch zone */
+body.size-mini .page {
+  padding-left: 19mm;
+}
+
+/* Six equally-spaced punch-guide dots in the binding margin.
+   Dot centers at 12.5 / 31.5 / 50.5 / 69.5 / 88.5 / 107.5 mm from the top.
+   background-position y=3mm puts the first tile's center at 3+9.5=12.5mm.
+   The 7th repetition would land at 126.5mm, outside the 120mm page height. */
+body.size-mini .page::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 19mm;
+  height: 100%;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.18) 1.2mm, transparent 1.3mm);
+  background-size: 19mm 19mm;
+  background-position: 0 3mm;
+  background-repeat: repeat-y;
+  pointer-events: none;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
