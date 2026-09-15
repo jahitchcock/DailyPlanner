@@ -940,6 +940,116 @@ h4.label {
 .review-box + .review-box { margin-top: 4mm; }
 .review-box .review-lines { flex: 1; }
 
+/* ============ Insert pages ============ */
+
+/* ---- Brain Dump ---- */
+.page.brain-dump { flex-direction: column; }
+.bd-lines { flex: 1; }
+
+/* ---- Collections ---- */
+.page.collections { flex-direction: column; }
+.coll-title-field { margin-bottom: 4mm; }
+.coll-title-line { border-bottom: 2px solid var(--accent); height: 8mm; }
+.coll-list { flex: 1; }
+
+/* ---- Sketch / Doodle ---- */
+.page.sketch { flex-direction: column; }
+.sketch-title-field { margin-bottom: 3mm; }
+.sketch-title-line { border-bottom: 1px solid var(--line-solid); height: 7mm; }
+.sketch-canvas {
+  flex: 1;
+  border: 1px solid var(--box-border);
+  border-radius: 4px;
+  background: var(--box-bg);
+}
+
+/* ---- Expense Log ---- */
+.page.expense-log { flex-direction: column; }
+.exp-header, .exp-row, .exp-total {
+  display: grid;
+  grid-template-columns: 14mm 1fr 18mm;
+  gap: 2mm;
+  padding: 1mm 0;
+  border-bottom: 1px solid var(--line);
+}
+.exp-header {
+  border-bottom: 2px solid var(--accent);
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-soft);
+  padding-bottom: 1.5mm;
+  margin-bottom: 0.5mm;
+}
+.exp-rows { flex: 1; overflow: hidden; }
+.exp-total {
+  border-top: 2px solid var(--accent);
+  border-bottom: none;
+  margin-top: 1mm;
+}
+.exp-total-label {
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-soft);
+  text-align: right;
+}
+.exp-total-val { border-bottom: 1px solid var(--accent); }
+
+/* ---- Future Log ---- */
+.page.future-log { flex-direction: column; }
+.fl-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 3mm;
+  flex: 1;
+}
+.fl-box {
+  border: 1px solid var(--box-border);
+  border-radius: 4px;
+  padding: 2mm 2.5mm;
+  display: flex;
+  flex-direction: column;
+  background: var(--box-bg);
+}
+.fl-month {
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-soft);
+  border-bottom: 1px solid var(--line-solid);
+  padding-bottom: 1mm;
+  margin-bottom: 1.5mm;
+  min-height: 5mm;
+}
+.fl-lines { flex: 1; border: none; background: transparent; padding: 0; }
+
+/* ---- Project ---- */
+.page.project { flex-direction: column; }
+.proj-fields { margin-bottom: 4mm; }
+.proj-field {
+  display: flex;
+  align-items: flex-end;
+  gap: 3mm;
+  margin-bottom: 3mm;
+}
+.proj-label {
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-soft);
+  min-width: 16mm;
+  flex-shrink: 0;
+  padding-bottom: 1px;
+}
+.proj-line {
+  flex: 1;
+  border-bottom: 1px dotted var(--line);
+  height: 6mm;
+}
+.proj-steps { flex: 1; }
+
 /* ============ Mini (Pocket/A7, 81×120 mm) ============ */
 
 /* Left binding margin — keeps content clear of the 6-ring punch zone */
