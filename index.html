@@ -31,6 +31,33 @@
       <label><input type="checkbox" id="chk-mood-tracker"> Mood Tracker</label>
       <label><input type="checkbox" id="chk-weekly-review"> Weekly Review</label>
     </div>
+    <div class="row checks">
+      <label><input type="checkbox" id="chk-st-squares"> Skill Squares</label>
+      <label><input type="checkbox" id="chk-st-month-end"> Skill Tree Month's End</label>
+    </div>
+    <div class="row checks inserts-row">
+      <label>Character Sheet <input type="number" id="ins-st-sheet" class="ins-count" value="0" min="0" max="99"></label>
+      <label>Skill Key <input type="number" id="ins-st-key" class="ins-count" value="0" min="0" max="99"></label>
+      <label>Skill Tree <input type="number" id="ins-st-tree" class="ins-count" value="0" min="0" max="99"></label>
+      <label>Loot Table <input type="number" id="ins-st-loot" class="ins-count" value="0" min="0" max="99"></label>
+      <label>Quest Log <input type="number" id="ins-st-quest" class="ins-count" value="0" min="0" max="99"></label>
+    </div>
+    <div class="row">
+      <label>Skill branches
+        <select id="st-set">
+          <option value="life">Life (Body, Mind, Craft…)</option>
+          <option value="fantasy">Fantasy (Vitality, Arcana…)</option>
+          <option value="custom">Custom…</option>
+        </select>
+      </label>
+    </div>
+    <div class="row" id="st-custom" hidden>
+      <label>1 <input type="text" id="st-b0" class="st-name" maxlength="14"></label>
+      <label>2 <input type="text" id="st-b1" class="st-name" maxlength="14"></label>
+      <label>3 <input type="text" id="st-b2" class="st-name" maxlength="14"></label>
+      <label>4 <input type="text" id="st-b3" class="st-name" maxlength="14"></label>
+      <label>5 <input type="text" id="st-b4" class="st-name" maxlength="14"></label>
+    </div>
     <div class="row checks inserts-row">
       <label>Brain Dump <input type="number" id="ins-brain-dump" class="ins-count" value="0" min="0" max="99"></label>
       <label>Collections <input type="number" id="ins-collections" class="ins-count" value="0" min="0" max="99"></label>
@@ -523,6 +550,104 @@
         <div class="line"><span class="num">8</span></div>
         <div class="line"><span class="num">9</span></div>
         <div class="line"><span class="num">10</span></div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ============ Skill Tree journal templates (bodies filled by JS) ============ -->
+  <template id="tpl-st-sheet">
+    <div class="page st-page st-sheet">
+      <div class="hd">
+        <span class="title"><span class="mark"></span> Character Sheet</span>
+        <span class="ornament"></span>
+      </div>
+      <div class="proj-fields">
+        <div class="proj-field"><span class="proj-label">Name</span><div class="proj-line"></div></div>
+        <div class="proj-field"><span class="proj-label">Title</span><div class="proj-line"></div></div>
+        <div class="proj-field"><span class="proj-label">Season</span><div class="proj-line"></div></div>
+      </div>
+      <div class="st-lvl">
+        <div class="st-lvl-box"><span>Level</span></div>
+        <div class="st-lvl-box"><span>Total XP</span></div>
+      </div>
+      <h4 class="label">Stats</h4>
+      <div class="st-stats"></div>
+    </div>
+  </template>
+
+  <template id="tpl-st-key">
+    <div class="page st-page st-key">
+      <div class="hd">
+        <span class="title"><span class="mark"></span> Skill Key</span>
+        <span class="ornament"></span>
+      </div>
+      <div class="st-key-body"></div>
+    </div>
+  </template>
+
+  <template id="tpl-st-tree">
+    <div class="page st-page st-tree">
+      <div class="hd">
+        <span class="title"><span class="mark"></span> Skill Tree</span>
+        <span class="ornament"></span>
+      </div>
+      <div class="st-tree-body"></div>
+      <div class="st-tree-base"><span>Overall level</span><div class="st-tree-lv"></div></div>
+    </div>
+  </template>
+
+  <template id="tpl-st-loot">
+    <div class="page st-page st-loot">
+      <div class="hd">
+        <span class="title"><span class="mark"></span> Loot Table</span>
+        <span class="ornament"></span>
+      </div>
+      <div class="st-loot-head"><span>Lv</span><span>Reward</span><span>&#10003;</span></div>
+      <div class="st-loot-rows"></div>
+    </div>
+  </template>
+
+  <template id="tpl-st-quest">
+    <div class="page st-page st-quest">
+      <div class="hd">
+        <span class="title"><span class="mark"></span> Quest Log</span>
+        <span class="ornament"></span>
+      </div>
+      <div class="st-quest-rows"></div>
+    </div>
+  </template>
+
+  <template id="tpl-st-squares">
+    <div class="page st-page st-squares">
+      <div class="hd">
+        <span class="title"><span class="mark"></span> <span class="js-month"></span></span>
+        <span class="ornament"></span>
+      </div>
+      <h4 class="label">Skill Squares</h4>
+      <div class="st-sq-grid"></div>
+      <div class="st-note">Fill a square each day you follow through, then fill a bubble on your tree. Progress is never lost.</div>
+    </div>
+  </template>
+
+  <template id="tpl-st-month-end">
+    <div class="page st-page st-month-end">
+      <div class="hd">
+        <span class="title"><span class="mark"></span> <span class="js-month"></span> &middot; Month's End</span>
+        <span class="ornament"></span>
+      </div>
+      <div class="st-me-head"><span>Branch</span><span>Squares</span><span>XP</span></div>
+      <div class="st-me-rows"></div>
+      <div class="st-lvl">
+        <div class="st-lvl-box"><span>XP gained</span></div>
+        <div class="st-lvl-box"><span>Level reached</span></div>
+      </div>
+      <div class="review-box">
+        <h4 class="label">Wins &amp; lessons</h4>
+        <div class="box lines fill-lines review-lines"><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div></div>
+      </div>
+      <div class="review-box">
+        <h4 class="label">Next month's focus</h4>
+        <div class="box lines fill-lines review-lines"><div class="line"></div><div class="line"></div><div class="line"></div></div>
       </div>
     </div>
   </template>

@@ -108,8 +108,7 @@
     INSERT_KEYS.forEach(function (key) {
       var n = inserts[key] || 0;
       for (var i = 0; i < n; i++) {
-        var f = clone(key);
-        mount.appendChild(f.querySelector('.page'));
+        mount.appendChild(buildInsert(key));
       }
     });
   }
@@ -144,9 +143,145 @@
 
   // ---- orchestration ----
 
-  var INSERT_KEYS = ['brain-dump', 'collections', 'sketch', 'expense-log', 'future-log', 'project', 'grid', 'dot-grid'];
+  var INSERT_KEYS = ['st-sheet', 'st-key', 'st-tree', 'st-loot', 'st-quest',
+                     'brain-dump', 'collections', 'sketch', 'expense-log', 'future-log', 'project', 'grid', 'dot-grid'];
+
+  // ---- Skill Tree journal ----
+
+  var BRANCH_SETS = {
+    life: ['Body', 'Mind', 'Craft', 'Bonds', 'Home & Money'],
+    fantasy: ['Vitality', 'Arcana', 'Artisan', 'Fellowship', 'Fortune']
+  };
+  var ST_SKILLS = 3;    // skills per branch
+  var ST_TIERS = 5;     // tree tiers; tier t holds t bubbles (15 per branch)
+  var stState = { set: 'life', custom: ['', '', '', '', ''] };
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function repeat(str, n) { return new Array(n + 1).join(str); }
+
+  function getBranches() {
+    if (stState.set === 'custom') {
+      return stState.custom.map(function (n, i) { return (n || '').trim() || 'Branch ' + (i + 1); });
+    }
+    return BRANCH_SETS[stState.set] || BRANCH_SETS.life;
+  }
+  function skillCode(b, s) { return 'ABCDE'.charAt(b) + (s + 1); }
+
+  function fillStSheet(page) {
+    var html = '';
+    getBranches().forEach(function (name) {
+      html += '<div class="st-stat"><span class="st-stat-name">' + esc(name) + '</span>' +
+              '<span class="st-stat-lv">Lv</span><div class="st-stat-box"></div></div>';
+    });
+    page.querySelector('.st-stats').innerHTML = html;
+  }
+
+  function fillStKey(page) {
+    var html = '';
+    getBranches().forEach(function (name, b) {
+      html += '<div class="st-key-branch"><div class="st-key-name">' + esc(name) + '</div>';
+      for (var s = 0; s < ST_SKILLS; s++) {
+        html += '<div class="st-key-row"><span class="st-code">' + skillCode(b, s) + '</span>' +
+                '<div class="st-key-line"></div><span class="st-xp">xp</span></div>';
+      }
+      html += '</div>';
+    });
+    page.querySelector('.st-key-body').innerHTML = html;
+  }
+
+  function fillStTree(page) {
+    var html = '';
+    getBranches().forEach(function (name) {
+      html += '<div class="st-col"><div class="st-trunk">';
+      for (var t = 1; t <= ST_TIERS; t++) {
+        html += '<div class="st-tier">' + repeat('<i class="st-bub"></i>', t) + '</div>';
+      }
+      html += '</div><div class="st-col-name">' + esc(name) + '</div></div>';
+    });
+    page.querySelector('.st-tree-body').innerHTML = html;
+  }
+
+  function fillStLoot(page) {
+    var html = '';
+    for (var lv = 1; lv <= 10; lv++) {
+      html += '<div class="st-loot-row"><span class="st-loot-lv">' + lv + '</span>' +
+              '<div class="st-loot-line"></div><span class="st-loot-chk">&#9744;</span></div>';
+    }
+    page.querySelector('.st-loot-rows').innerHTML = html;
+  }
+
+  function fillStQuest(page) {
+    var html = '';
+    for (var i = 0; i < 7; i++) {
+      html += '<div class="st-quest-row">' +
+              '<div class="st-q-top"><span class="st-loot-chk">&#9744;</span><div class="st-loot-line"></div></div>' +
+              '<div class="st-q-sub"><span>Reward</span><div class="st-loot-line"></div><span>Due</span><div class="st-loot-line st-q-due"></div></div>' +
+              '</div>';
+    }
+    page.querySelector('.st-quest-rows').innerHTML = html;
+  }
+
+  function buildStSquaresPage(monthDate) {
+    var f = clone('st-squares');
+    f.querySelector('.js-month').textContent = MONTHS[monthDate.getMonth()] + ' ' + monthDate.getFullYear();
+    var daysIn = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate();
+    var html = '<div class="sq-cell sq-corner"></div>';
+    for (var d = 1; d <= 31; d++) {
+      html += '<div class="sq-cell sq-day' + (d > daysIn ? ' blank' : '') + '">' + (d <= daysIn ? d : '') + '</div>';
+    }
+    getBranches().forEach(function (name, b) {
+      html += '<div class="sq-branch">' + esc(name) + '</div>';
+      for (var s = 0; s < ST_SKILLS; s++) {
+        html += '<div class="sq-cell sq-code">' + skillCode(b, s) + '</div>';
+        for (var d2 = 1; d2 <= 31; d2++) html += '<div class="sq-cell' + (d2 > daysIn ? ' blank' : '') + '"></div>';
+      }
+    });
+    f.querySelector('.st-sq-grid').innerHTML = html;
+    return f.querySelector('.page');
+  }
+  function renderStSquares(start, end, mount) {
+    var n = 0;
+    eachMonth(start, end, function (cur) { mount.appendChild(buildStSquaresPage(cur)); n++; });
+    return n;
+  }
+
+  function buildStMonthEndPage(monthDate) {
+    var f = clone('st-month-end');
+    f.querySelector('.js-month').textContent = MONTHS[monthDate.getMonth()] + ' ' + monthDate.getFullYear();
+    var html = '';
+    getBranches().forEach(function (name) {
+      html += '<div class="st-me-row"><span class="st-me-name">' + esc(name) + '</span>' +
+              '<div class="st-stat-box"></div><div class="st-stat-box"></div></div>';
+    });
+    f.querySelector('.st-me-rows').innerHTML = html;
+    return f.querySelector('.page');
+  }
+  function renderStMonthEnd(start, end, mount) {
+    var n = 0;
+    eachMonth(start, end, function (cur) { mount.appendChild(buildStMonthEndPage(cur)); n++; });
+    return n;
+  }
+
+  // Inserts whose bodies depend on the selected branch set are filled after cloning.
+  var INSERT_FILL = {
+    'st-sheet': fillStSheet, 'st-key': fillStKey, 'st-tree': fillStTree,
+    'st-loot': fillStLoot, 'st-quest': fillStQuest
+  };
+  function buildInsert(key) {
+    var page = clone(key).querySelector('.page');
+    if (INSERT_FILL[key]) INSERT_FILL[key](page);
+    return page;
+  }
+
+  var INSERT_NAMES = {
+    'st-sheet': 'character sheet', 'st-key': 'skill key', 'st-tree': 'skill tree',
+    'st-loot': 'loot table', 'st-quest': 'quest log'
+  };
 
   var UNIT_NAMES = {
+    'st-squares': 'skill square trackers', 'st-month-end': 'skill tree month-end pages',
     monthly: 'month spreads', weekly: 'week spreads', daily: 'day pages',
     thanks: 'thankfulness pages', 'habit-tracker': 'habit trackers',
     'one-line': 'one-line pages', 'mood-tracker': 'mood trackers',
@@ -241,9 +376,11 @@
     monthly: renderMonthly, weekly: renderWeekly, daily: renderDaily,
     thanks: renderThanks, 'habit-tracker': renderHabitTracker,
     'one-line': renderOneLine, 'mood-tracker': renderMoodTracker,
-    'weekly-review': renderWeeklyReview
+    'weekly-review': renderWeeklyReview,
+    'st-squares': renderStSquares, 'st-month-end': renderStMonthEnd
   };
-  var ORDER = ['monthly', 'weekly', 'daily', 'thanks', 'habit-tracker', 'one-line', 'mood-tracker', 'weekly-review'];
+  var ORDER = ['monthly', 'weekly', 'daily', 'thanks', 'habit-tracker', 'one-line', 'mood-tracker', 'weekly-review',
+               'st-squares', 'st-month-end'];
 
   // Build the chronological reading order for 2-sided printing:
   // leading blank (so months start on page 2), all month spreads,
@@ -269,6 +406,8 @@
       if (types.indexOf('habit-tracker') !== -1) add('habit-tracker', { single: buildHabitTrackerPage(cur) });
       if (types.indexOf('one-line') !== -1)      add('one-line',      { spread: buildOneLineSpread(cur) });
       if (types.indexOf('mood-tracker') !== -1)  add('mood-tracker',  { single: buildMoodTrackerPage(cur) });
+      if (types.indexOf('st-squares') !== -1)    add('st-squares',    { single: buildStSquaresPage(cur) });
+      if (types.indexOf('st-month-end') !== -1)  add('st-month-end',  { single: buildStMonthEndPage(cur) });
     });
 
     eachWeek(start, end, function (m) {
@@ -365,7 +504,7 @@
         if (hasInserts) {
           INSERT_KEYS.forEach(function (key) {
             var n = inserts[key] || 0;
-            for (var i = 0; i < n; i++) { var ff = clone(key); flatPages.push(ff.querySelector('.page')); }
+            for (var i = 0; i < n; i++) { flatPages.push(buildInsert(key)); }
           });
         }
         var real4 = flatPages.length;
@@ -380,7 +519,7 @@
       if (hasInserts) {
         INSERT_KEYS.forEach(function (key) {
           var n = inserts[key] || 0;
-          for (var i = 0; i < n; i++) { var ff = clone(key); seq.push(ff.querySelector('.page')); }
+          for (var i = 0; i < n; i++) { seq.push(buildInsert(key)); }
         });
         while (seq.length % 2 !== 0) seq.push(blankPage());
       }
@@ -412,7 +551,7 @@
     if (hasInserts) {
       INSERT_KEYS.forEach(function (k) {
         var n = inserts[k] || 0;
-        if (n) parts.push(n + ' ' + k.replace(/-/g, ' ') + (n > 1 ? 's' : ''));
+        if (n) parts.push(n + ' ' + (INSERT_NAMES[k] || k.replace(/-/g, ' ')) + (n > 1 ? 's' : ''));
       });
     }
 
@@ -1333,11 +1472,11 @@
       if (outSel) outSel.value = 'Mini';
       if (tileEl) tileEl.value = '4up';
       if (duplexEl) duplexEl.checked = true;
-      ['monthly', 'weekly', 'daily', 'thanks', 'habit-tracker', 'one-line', 'mood-tracker', 'weekly-review'].forEach(function (t) {
+      ORDER.forEach(function (t) {
         var el = document.getElementById('chk-' + t);
         if (el) el.checked = true;
       });
-      var INS_DEFAULTS = { 'brain-dump': 4, 'collections': 2, 'sketch': 4, 'expense-log': 1, 'future-log': 1, 'project': 2 };
+      var INS_DEFAULTS = { 'st-sheet': 1, 'st-key': 1, 'st-tree': 1, 'st-loot': 1, 'st-quest': 1, 'brain-dump': 4, 'collections': 2, 'sketch': 4, 'expense-log': 1, 'future-log': 1, 'project': 2 };
       INSERT_KEYS.forEach(function (k) {
         var el = document.getElementById('ins-' + k);
         if (el && INS_DEFAULTS[k]) el.value = INS_DEFAULTS[k];
@@ -1362,14 +1501,28 @@
         onTheme();
       }
 
+      var stSetEl = document.getElementById('st-set');
+      var stCustomEl = document.getElementById('st-custom');
+      var syncBranches = function () {
+        stState.set = stSetEl ? stSetEl.value : 'life';
+        if (stCustomEl) stCustomEl.hidden = stState.set !== 'custom';
+        for (var i = 0; i < 5; i++) {
+          var inp = document.getElementById('st-b' + i);
+          if (inp) stState.custom[i] = inp.value;
+        }
+      };
+      syncBranches();
+      if (stSetEl) stSetEl.addEventListener('change', syncBranches);
+
       var tileOn = function () { return tileEl ? tileEl.value : ''; };
       var revalidate = function () {
         if (outSel && paperSel) validateSizes(outSel, paperSel, printBtn, fitNote, tileOn());
       };
 
       var run = function () {
+        syncBranches();
         var types = [];
-        ['monthly', 'weekly', 'daily', 'thanks', 'habit-tracker', 'one-line', 'mood-tracker', 'weekly-review'].forEach(function (t) {
+        ORDER.forEach(function (t) {
           var box = document.getElementById('chk-' + t);
           if (box && box.checked) types.push(t);
         });

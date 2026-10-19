@@ -1095,6 +1095,116 @@ h4.label {
   print-color-adjust: exact;
 }
 
+/* ============ Skill Tree journal ============ */
+.controls .st-name { width: 7em; }
+.controls .row[hidden] { display: none; }
+.page.st-page { flex-direction: column; }
+
+/* shared little value box */
+.st-stat-box, .st-lvl-box {
+  border: 1px solid var(--box-border);
+  border-radius: 3px;
+  background: var(--box-bg);
+}
+
+/* Character sheet */
+.st-lvl { display: flex; gap: 3mm; margin: 2mm 0; }
+.st-lvl-box {
+  flex: 1;
+  height: 14mm;
+  position: relative;
+}
+.st-lvl-box span {
+  position: absolute; top: 1mm; left: 1.5mm;
+  font-size: 6.5pt; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--accent-soft);
+}
+.st-stats { flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 2mm; }
+.st-stat { display: flex; align-items: center; gap: 2mm; flex: 1; max-height: 20mm; }
+.st-stat-name { flex: 1; font-size: 9pt; color: var(--ink); }
+.st-stat-lv { font-size: 6.5pt; color: var(--accent-soft); text-transform: uppercase; }
+.st-stat .st-stat-box { width: 12mm; height: 100%; max-height: 10mm; }
+
+/* Skill key */
+.st-key-body { flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 1.5mm; }
+.st-key-branch { flex: 1; display: flex; flex-direction: column; }
+.st-key-name {
+  font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--accent-soft); border-bottom: 1px solid var(--accent-border);
+}
+.st-key-row { flex: 1; display: flex; align-items: flex-end; gap: 1.5mm; }
+.st-code { font-size: 6.5pt; color: var(--accent-deep); min-width: 5mm; padding-bottom: 0.3mm; }
+.st-key-line { flex: 1; border-bottom: 1px dotted var(--line); height: 100%; }
+.st-xp { font-size: 5.5pt; color: var(--cell-num); padding-bottom: 0.3mm; }
+
+/* Skill tree */
+.st-tree-body { flex: 1; display: flex; gap: 1.5mm; }
+.st-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.st-trunk {
+  flex: 1; display: flex; flex-direction: column; justify-content: space-around;
+  border-bottom: 2px solid var(--accent);
+  background: linear-gradient(var(--line-solid), var(--line-solid)) center / 1px 100% no-repeat;
+}
+.st-tier { display: flex; justify-content: center; gap: 0.6mm; }
+.st-bub {
+  display: block; width: 2.6mm; height: 2.6mm; border-radius: 50%;
+  border: 1px solid var(--accent-soft); background: var(--bg);
+}
+.st-col-name {
+  font-size: 6.5pt; text-align: center; color: var(--accent-soft);
+  text-transform: uppercase; letter-spacing: 0.04em; padding-top: 1mm; overflow-wrap: anywhere;
+}
+.st-tree-base { display: flex; align-items: center; gap: 2mm; margin-top: 2mm; font-size: 7pt; color: var(--accent-soft); text-transform: uppercase; }
+.st-tree-lv { flex: 1; border-bottom: 1px dotted var(--line); height: 5mm; }
+
+/* Loot table + quest log */
+.st-loot-head {
+  display: grid; grid-template-columns: 8mm 1fr 6mm; gap: 2mm;
+  font-size: 6.5pt; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-soft);
+  border-bottom: 1px solid var(--accent-border);
+}
+.st-loot-rows, .st-quest-rows { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.st-loot-row { flex: 1; display: grid; grid-template-columns: 8mm 1fr 6mm; gap: 2mm; align-items: end; }
+.st-loot-lv { font-size: 8pt; color: var(--accent-deep); text-align: center; }
+.st-loot-line { flex: 1; border-bottom: 1px dotted var(--line); height: 100%; min-height: 4mm; }
+.st-loot-chk { font-size: 9pt; color: var(--accent-soft); line-height: 1; }
+.st-quest-row { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 1mm; }
+.st-q-top, .st-q-sub { display: flex; align-items: flex-end; gap: 1.5mm; }
+.st-q-top .st-loot-line { height: 4.5mm; }
+.st-q-sub { font-size: 6pt; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-soft); padding-left: 5mm; }
+.st-q-sub .st-loot-line { height: 4mm; min-height: 0; }
+.st-q-sub .st-q-due { flex: 0 0 14mm; }
+
+/* Skill squares tracker */
+.st-sq-grid {
+  display: grid; grid-template-columns: 8mm repeat(31, 1fr);
+  flex: 1; align-content: stretch;
+  border: 1px solid var(--box-border); border-radius: 4px; overflow: hidden;
+}
+.sq-cell {
+  border-right: 1px solid var(--cell-border); border-bottom: 1px solid var(--cell-border);
+  font-size: 5pt; color: var(--cell-num);
+  display: flex; align-items: center; justify-content: center; min-height: 0;
+}
+.sq-corner, .sq-day { background: var(--accent-bg); color: var(--accent-soft); }
+.sq-code { background: var(--daynum-bg); color: var(--daynum-ink); font-size: 6pt; }
+.sq-cell.blank { background: var(--blank-bg); }
+.sq-branch {
+  grid-column: 1 / -1;
+  background: var(--accent-bg); color: var(--accent-soft);
+  font-size: 6pt; text-transform: uppercase; letter-spacing: 0.1em; padding: 0 1.5mm;
+  border-bottom: 1px solid var(--cell-border);
+}
+.st-note { font-size: 6pt; font-style: italic; color: var(--muted); margin-top: 2mm; }
+
+/* Month's end */
+.st-me-head, .st-me-row { display: grid; grid-template-columns: 1fr 14mm 14mm; gap: 2mm; align-items: center; }
+.st-me-head { font-size: 6.5pt; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-soft); text-align: center; }
+.st-me-head span:first-child { text-align: left; }
+.st-me-rows { display: flex; flex-direction: column; gap: 1.5mm; margin: 1mm 0; }
+.st-me-name { font-size: 8.5pt; }
+.st-me-row .st-stat-box { height: 8mm; }
+
 /* ============ Mini (Pocket/A7, 81×120 mm) ============ */
 
 /* Left binding margin + tighter padding for the small live area (56×108 mm) */
@@ -1238,3 +1348,34 @@ body.size-mini .page::before {
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
+
+/* Skill Tree journal — Mini */
+body.size-mini .st-lvl { margin: 1mm 0; gap: 2mm; }
+body.size-mini .st-lvl-box { height: 9mm; }
+body.size-mini .st-lvl-box span { font-size: 5pt; }
+body.size-mini .st-stat-name { font-size: 6.5pt; }
+body.size-mini .st-stat-lv { font-size: 5pt; }
+body.size-mini .st-stat .st-stat-box { width: 8mm; }
+body.size-mini .st-key-name { font-size: 5.5pt; }
+body.size-mini .st-code { font-size: 5pt; min-width: 4mm; }
+body.size-mini .st-xp { font-size: 4.5pt; }
+body.size-mini .st-tree-body { gap: 0.8mm; }
+body.size-mini .st-bub { width: 1.9mm; height: 1.9mm; }
+body.size-mini .st-tier { gap: 0.3mm; }
+body.size-mini .st-col-name { font-size: 4.5pt; letter-spacing: 0; }
+body.size-mini .st-tree-base { font-size: 5pt; margin-top: 1mm; }
+body.size-mini .st-tree-lv { height: 4mm; }
+body.size-mini .st-loot-head, body.size-mini .st-loot-row { grid-template-columns: 5mm 1fr 4mm; gap: 1mm; font-size: 5pt; }
+body.size-mini .st-loot-lv { font-size: 6pt; }
+body.size-mini .st-loot-chk { font-size: 7pt; }
+body.size-mini .st-q-sub { font-size: 4.5pt; padding-left: 4mm; }
+body.size-mini .st-q-sub .st-q-due { flex-basis: 9mm; }
+body.size-mini .st-sq-grid { grid-template-columns: 5mm repeat(31, 1fr); }
+body.size-mini .sq-cell { font-size: 3.5pt; }
+body.size-mini .sq-code { font-size: 4.5pt; }
+body.size-mini .sq-branch { font-size: 4.5pt; }
+body.size-mini .st-note { font-size: 4.5pt; margin-top: 1mm; }
+body.size-mini .st-me-head, body.size-mini .st-me-row { grid-template-columns: 1fr 9mm 9mm; gap: 1mm; }
+body.size-mini .st-me-head { font-size: 5pt; }
+body.size-mini .st-me-name { font-size: 6pt; }
+body.size-mini .st-me-row .st-stat-box { height: 5mm; }
