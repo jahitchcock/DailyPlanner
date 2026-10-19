@@ -357,6 +357,7 @@ h4.label {
 .weekly .day-stack {
   display: flex;
   flex-direction: column;
+  padding-bottom: 4mm;
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -747,7 +748,7 @@ h4.label {
   pointer-events: none;
 }
 
-/* ============ 2-up tiling (landscape sheet, cut in half) ============ */
+/* ============ 2-up tiling (landscape sheet, cut in half) / 4-up tiling (portrait, cut in quarters) ============ */
 .sheet {
   display: flex;
   align-items: center;
@@ -781,6 +782,27 @@ h4.label {
   border-left: 1px dashed #b9b0a0;
 }
 
+/* 4-up: 2×2 grid with cross-cut guides */
+.sheet.cut4 { flex-wrap: wrap; align-items: flex-start; }
+/* Duplex back sheet: screen-only indicator (outline + blue shadow to distinguish from front) */
+.sheet.duplex-back {
+  box-shadow: 0 4px 14px rgba(0, 0, 180, 0.15);
+  outline: 2px dashed rgba(60, 100, 220, 0.35);
+  outline-offset: 3px;
+}
+.sheet.cut4::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: 50%;
+  border-left: 1px dashed #b9b0a0;
+}
+.sheet.cut4::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  border-top: 1px dashed #b9b0a0;
+}
+
 /* ---- Print ---- */
 @media print {
   body { background: #fff; }
@@ -804,6 +826,8 @@ h4.label {
   }
   .sheet:last-child { page-break-after: auto; }
   .sheet .page { page-break-after: auto; }
+  /* Remove screen-only back-sheet indicator */
+  .sheet.duplex-back { outline: none; box-shadow: none; }
 }
 
 /* ============ New page types — control panel ============ */
@@ -950,7 +974,8 @@ h4.label {
 .page.collections { flex-direction: column; }
 .coll-title-field { margin-bottom: 4mm; }
 .coll-title-line { border-bottom: 2px solid var(--accent); height: 8mm; }
-.coll-list { flex: 1; }
+.coll-list { flex: 1; display: flex; flex-direction: column; }
+.coll-list > .line { flex: 1 1 auto; height: auto; min-height: 6mm; }
 
 /* ---- Sketch / Doodle ---- */
 .page.sketch { flex-direction: column; }
@@ -981,7 +1006,8 @@ h4.label {
   padding-bottom: 1.5mm;
   margin-bottom: 0.5mm;
 }
-.exp-rows { flex: 1; overflow: hidden; }
+.exp-rows { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+.exp-rows > .exp-row { flex: 1 1 0; min-height: 6mm; }
 .exp-total {
   border-top: 2px solid var(--accent);
   border-bottom: none;
@@ -1050,17 +1076,139 @@ h4.label {
 }
 .proj-steps { flex: 1; }
 
-/* ============ Mini (Pocket/A7, 81×120 mm) ============ */
-
-/* Left binding margin — keeps content clear of the 6-ring punch zone */
-body.size-mini .page {
-  padding-left: 19mm;
+/* ---- Grid ---- */
+.page.grid {
+  background-image:
+    repeating-linear-gradient(var(--line-solid) 0, var(--line-solid) 1px, transparent 1px, transparent 5mm),
+    repeating-linear-gradient(90deg, var(--line-solid) 0, var(--line-solid) 1px, transparent 1px, transparent 5mm);
+  background-size: 5mm 5mm;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
-/* Six equally-spaced punch-guide dots in the binding margin.
-   Dot centers at 12.5 / 31.5 / 50.5 / 69.5 / 88.5 / 107.5 mm from the top.
-   background-position y=3mm puts the first tile's center at 3+9.5=12.5mm.
-   The 7th repetition would land at 126.5mm, outside the 120mm page height. */
+/* ---- Dot Grid ---- */
+.page.dot-grid {
+  background-image: radial-gradient(circle, var(--line) 0.6mm, transparent 0.6mm);
+  background-size: 5mm 5mm;
+  background-position: 0 0;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ============ Mini (Pocket/A7, 81×120 mm) ============ */
+
+/* Left binding margin + tighter padding for the small live area (56×108 mm) */
+body.size-mini .page {
+  padding: 6mm 6mm 6mm 19mm;
+}
+
+/* Scale down typography and spacing to fit Mini's ~half-A5 live area */
+body.size-mini .hd {
+  padding-bottom: 2px;
+  margin-bottom: 4px;
+  border-bottom-width: 1px;
+}
+body.size-mini .hd .title { font-size: 8pt !important; letter-spacing: 0; }
+body.size-mini .hd .ornament { font-size: 7pt; }
+body.size-mini h4.label {
+  font-size: 5.5pt;
+  letter-spacing: 1px;
+  margin: 3px 0 2px;
+}
+body.size-mini .box { padding: 3px 4px; border-radius: 2px; }
+body.size-mini .lines > .line { height: 4mm; }
+body.size-mini .num  { font-size: 5.5pt; width: 10px; }
+body.size-mini .check { font-size: 7pt;  width: 11px; }
+body.size-mini .cols { gap: 4px; }
+
+/* Daily — hide mood tracker box (too decorative for mini space) */
+body.size-mini .daily .mood { display: none; }
+body.size-mini .daily .reflect .box { min-height: 10mm; }
+
+/* Weekly day blocks */
+body.size-mini .weekly .day { margin-bottom: 2px; }
+body.size-mini .weekly .block { margin-bottom: 2px; }
+body.size-mini .weekly .day-stack { margin-top: 2mm !important; }
+
+/* Monthly calendar cells */
+body.size-mini .monthly .dow  { font-size: 5pt; padding: 1mm 0; }
+body.size-mini .monthly .cell { min-height: 7mm; }
+body.size-mini .monthly .daynum {
+  font-size: 5pt;
+  padding: 0;
+  width: 4mm;
+  height: 3mm;
+  line-height: 3mm;
+  top: 2px;
+  left: 2px;
+}
+
+/* Thankfulness */
+body.size-mini .thanks-prompt { margin-bottom: 2mm; }
+body.size-mini .thanks-prompt .line { height: 5mm; }
+
+/* Habit tracker — narrower day-number column */
+body.size-mini .ht-grid { grid-template-columns: 5mm repeat(7, 1fr); }
+body.size-mini .ht-cell { min-height: 3mm; font-size: 5pt; padding: 0 1px; }
+body.size-mini .ht-cell.col-head { min-height: 4mm; font-size: 5pt; }
+
+/* One line a day */
+body.size-mini .ol-line { height: 3.5mm; }
+body.size-mini .ol-num  { font-size: 5.5pt; min-width: 4mm; }
+
+/* Mood tracker */
+body.size-mini .mt-grid { gap: 1mm; }
+body.size-mini .mt-cell { min-height: 7mm; }
+body.size-mini .mt-num  { font-size: 5pt; }
+
+/* Weekly review boxes */
+body.size-mini .review-box + .review-box { margin-top: 2mm; }
+
+/* Future log */
+body.size-mini .fl-grid { gap: 2mm; }
+body.size-mini .fl-month { font-size: 6pt; min-height: 4mm; padding-bottom: 0.5mm; margin-bottom: 1mm; }
+
+/* Expense log — tighter columns */
+body.size-mini .exp-header,
+body.size-mini .exp-row,
+body.size-mini .exp-total {
+  grid-template-columns: 9mm 1fr 11mm;
+  font-size: 5.5pt;
+  padding: 0.5mm 0;
+}
+
+/* Project page */
+body.size-mini .proj-label { min-width: 11mm; font-size: 6pt; }
+body.size-mini .proj-line  { height: 4.5mm; }
+body.size-mini .proj-fields { margin-bottom: 2mm; }
+
+/* Duplex: back-of-sheet (even) pages have the binding on the right edge.
+   The leading blank in buildDuplexOrder means nth-child(2) = first back page. */
+body.size-mini.duplex-mode #pages > .page:nth-child(even) {
+  padding-left: 11mm;
+  padding-right: 19mm;
+}
+body.size-mini.duplex-mode #pages > .page:nth-child(even)::before {
+  left: auto;
+  right: 0;
+}
+
+/* Six punch-guide dots — 4 mm diameter, 19 mm centre-to-centre, centred vertically
+   on a 120 mm page.  Centres at 12.5 / 31.5 / 50.5 / 69.5 / 88.5 / 107.5 mm.
+   Each 4×4 mm tile is offset 7.5 mm from the strip's left edge to centre it in the
+   19 mm gutter, and 10.5 mm from the top of each centre-y (centre − 2 mm). */
+
+/* Back-sheet (verso) pages: guide on RIGHT — back-facing pages in the binder have
+   the rings on the right, so the punch guide must appear on the right margin. */
+body.size-mini .sheet.duplex-back .slot .page {
+  padding-left: 6mm;
+  padding-right: 19mm;
+}
+body.size-mini .sheet.duplex-back .slot .page::before {
+  left: auto;
+  right: 0;
+}
+
 body.size-mini .page::before {
   content: '';
   position: absolute;
@@ -1068,10 +1216,24 @@ body.size-mini .page::before {
   top: 0;
   width: 19mm;
   height: 100%;
-  background-image: radial-gradient(circle, rgba(0,0,0,0.18) 1.2mm, transparent 1.3mm);
-  background-size: 19mm 19mm;
-  background-position: 0 3mm;
-  background-repeat: repeat-y;
+  background-image:
+    radial-gradient(circle at center, rgba(0,0,0,0.18) 1.7mm, transparent 2mm),
+    radial-gradient(circle at center, rgba(0,0,0,0.18) 1.7mm, transparent 2mm),
+    radial-gradient(circle at center, rgba(0,0,0,0.18) 1.7mm, transparent 2mm),
+    radial-gradient(circle at center, rgba(0,0,0,0.18) 1.7mm, transparent 2mm),
+    radial-gradient(circle at center, rgba(0,0,0,0.18) 1.7mm, transparent 2mm),
+    radial-gradient(circle at center, rgba(0,0,0,0.18) 1.7mm, transparent 2mm);
+  background-size:
+    4mm 4mm, 4mm 4mm, 4mm 4mm,
+    4mm 4mm, 4mm 4mm, 4mm 4mm;
+  background-position:
+    7.5mm 10.5mm,
+    7.5mm 29.5mm,
+    7.5mm 48.5mm,
+    7.5mm 67.5mm,
+    7.5mm 86.5mm,
+    7.5mm 105.5mm;
+  background-repeat: no-repeat;
   pointer-events: none;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;

@@ -57,6 +57,14 @@
     return el;
   }
 
+  var _fillerIdx = 0;
+  var FILLER_CYCLE = ['grid', 'dot-grid', 'collections'];
+  function fillerPage() {
+    var type = FILLER_CYCLE[_fillerIdx++ % FILLER_CYCLE.length];
+    var f = clone(type);
+    return f.querySelector('.page');
+  }
+
   // ---- range iterators ----
 
   function eachMonth(start, end, cb) {
@@ -136,7 +144,7 @@
 
   // ---- orchestration ----
 
-  var INSERT_KEYS = ['brain-dump', 'collections', 'sketch', 'expense-log', 'future-log', 'project'];
+  var INSERT_KEYS = ['brain-dump', 'collections', 'sketch', 'expense-log', 'future-log', 'project', 'grid', 'dot-grid'];
 
   var UNIT_NAMES = {
     monthly: 'month spreads', weekly: 'week spreads', daily: 'day pages',
@@ -177,22 +185,25 @@
     return n;
   }
 
-  function buildOneLinePage(monthDate) {
-    var f = clone('one-line');
-    f.querySelector('.js-month').textContent = MONTHS[monthDate.getMonth()] + ' ' + monthDate.getFullYear();
+  function buildOneLineSpread(monthDate) {
     var daysIn = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate();
-    var entries = f.querySelector('.ol-entries');
-    var html = '';
-    for (var d = 1; d <= 31; d++) {
-      var bl = d > daysIn ? ' blank' : '';
-      html += '<div class="ol-entry' + bl + '"><span class="ol-num">' + (d <= daysIn ? d : '') + '</span><div class="ol-line"></div></div>';
+    var label = MONTHS[monthDate.getMonth()] + ' ' + monthDate.getFullYear();
+    function makePage(from, to) {
+      var f = clone('one-line');
+      f.querySelector('.js-month').textContent = label;
+      var html = '';
+      for (var d = from; d <= to; d++) {
+        var bl = d > daysIn ? ' blank' : '';
+        html += '<div class="ol-entry' + bl + '"><span class="ol-num">' + (d <= daysIn ? d : '') + '</span><div class="ol-line"></div></div>';
+      }
+      f.querySelector('.ol-entries').innerHTML = html;
+      return f.querySelector('.page');
     }
-    entries.innerHTML = html;
-    return f.querySelector('.page');
+    return [makePage(1, 16), makePage(17, 31)];
   }
   function renderOneLine(start, end, mount) {
     var n = 0;
-    eachMonth(start, end, function (cur) { mount.appendChild(buildOneLinePage(cur)); n++; });
+    eachMonth(start, end, function (cur) { buildOneLineSpread(cur).forEach(function (p) { mount.appendChild(p); }); n++; });
     return n;
   }
 
@@ -237,37 +248,54 @@
   // Build the chronological reading order for 2-sided printing:
   // leading blank (so months start on page 2), all month spreads,
   // then per week: the week spread followed by that week's day pages.
-  // Blanks pad before any spread that wouldn't start on a facing (even) page.
-  // Date-driven extras append after core pages; inserts are handled in generate().
-  function buildDuplexOrder(types, start, end) {
+  // Builds a chronologically ordered item list with extras interleaved alongside their
+  // parent cadence: monthly extras follow each month spread, weekly review follows each
+  // weekly spread, and thankfulness follows each daily page within the same week loop.
+  // facingLayout=true: when both daily and thanks are enabled, each day is emitted
+  // as an atomic {spread: [thanks, daily]} pair.  The spread blank-insertion rule
+  // (insert blank before a spread that would start at an even index) then guarantees
+  // thanks always lands at an odd flat-page index (back-sheet, verso) and daily at
+  // the next even index (front-sheet, recto) — regardless of how many single pages
+  // (weekly-review, habit-tracker, etc.) precede them.
+  function buildChronologicalItems(types, start, end, facingLayout) {
     var items = [];
-    if (types.indexOf('monthly') !== -1) {
-      eachMonth(start, end, function (cur) { items.push({ spread: buildMonthlySpread(cur) }); });
-    }
-    eachWeek(start, end, function (m) {
-      if (types.indexOf('weekly') !== -1) items.push({ spread: buildWeeklySpread(m) });
-      if (types.indexOf('daily') !== -1) {
-        eachDayInWeek(m, start, end, function (d) { items.push({ single: buildDailyPage(d) }); });
-      }
-    });
-    if (types.indexOf('thanks') !== -1) {
-      for (var dd = new Date(start); dd <= end; dd = addDays(dd, 1)) items.push({ single: buildThanksPage(dd) });
-    }
-    if (types.indexOf('habit-tracker') !== -1) {
-      eachMonth(start, end, function (cur) { items.push({ single: buildHabitTrackerPage(cur) }); });
-    }
-    if (types.indexOf('one-line') !== -1) {
-      eachMonth(start, end, function (cur) { items.push({ single: buildOneLinePage(cur) }); });
-    }
-    if (types.indexOf('mood-tracker') !== -1) {
-      eachMonth(start, end, function (cur) { items.push({ single: buildMoodTrackerPage(cur) }); });
-    }
-    if (types.indexOf('weekly-review') !== -1) {
-      eachWeek(start, end, function (m) { items.push({ single: buildWeeklyReviewPage(m) }); });
-    }
+    var counts = {};
+    function add(type, item) { items.push(item); counts[type] = (counts[type] || 0) + 1; }
+    var hasDaily  = types.indexOf('daily')  !== -1;
+    var hasThanks = types.indexOf('thanks') !== -1;
 
+    eachMonth(start, end, function (cur) {
+      if (types.indexOf('monthly') !== -1)       add('monthly',       { spread: buildMonthlySpread(cur) });
+      if (types.indexOf('habit-tracker') !== -1) add('habit-tracker', { single: buildHabitTrackerPage(cur) });
+      if (types.indexOf('one-line') !== -1)      add('one-line',      { spread: buildOneLineSpread(cur) });
+      if (types.indexOf('mood-tracker') !== -1)  add('mood-tracker',  { single: buildMoodTrackerPage(cur) });
+    });
+
+    eachWeek(start, end, function (m) {
+      if (types.indexOf('weekly') !== -1)  add('weekly', { spread: buildWeeklySpread(m) });
+      eachDayInWeek(m, start, end, function (d) {
+        if (facingLayout && hasDaily && hasThanks) {
+          // Atomic verso+recto pair: spread[0]=thanks (verso), spread[1]=daily (recto).
+          // The assembly ensures spread[0] always lands at an odd (back-sheet) slot.
+          add('daily-pair', { spread: [buildThanksPage(d), buildDailyPage(d)] });
+        } else {
+          if (hasDaily)  add('daily',  { single: buildDailyPage(d) });
+          if (hasThanks) add('thanks', { single: buildThanksPage(d) });
+        }
+      });
+      // Weekly review goes after the week's day pages so the weekly spread and each
+      // day-pair spread land on adjacent leaves (facing pages) without interruption.
+      if (types.indexOf('weekly-review') !== -1)  add('weekly-review', { single: buildWeeklyReviewPage(m) });
+    });
+
+    return { items: items, counts: counts };
+  }
+
+  // Blanks pad before any spread that wouldn't start on a facing (even) page.
+  function buildDuplexOrder(types, start, end) {
+    var result = buildChronologicalItems(types, start, end);
     var pages = [blankPage()];   // page 1 blank → content starts on page 2
-    items.forEach(function (it) {
+    result.items.forEach(function (it) {
       if (it.spread) {
         if (pages.length % 2 === 0) pages.push(blankPage());   // keep spread on a facing pair
         pages.push(it.spread[0], it.spread[1]);
@@ -301,8 +329,9 @@
   function generate(types, start, end, tile, duplex, inserts) {
     var mount = document.getElementById('pages');
     mount.innerHTML = '';
+    document.body.classList.toggle('duplex-mode', !!duplex);
     var help = document.getElementById('assembly');
-    if (help) help.hidden = !(duplex && tile);
+    if (help) help.hidden = !(duplex && tile === '2up');
 
     var hasInserts = inserts && INSERT_KEYS.some(function (k) { return (inserts[k] || 0) > 0; });
 
@@ -312,6 +341,41 @@
     if (!types.length && !hasInserts) { setStatus('Select at least one layout or add some inserts.'); return; }
 
     if (duplex) {
+      if (tile === '4up') {
+        // 8 pages per sheet: 4 front (recto, holes-left) + 4 back (verso, holes-right).
+        // facingLayout=true generates thanks(verso) before daily(recto) per day.
+        // A leading filler at index 0 ensures thanks_1 lands at index 1 (back-sheet).
+        var result4 = buildChronologicalItems(types, start, end, true);
+        var flatPages = [];
+        var hasFacingPair = types.indexOf('thanks') !== -1 && types.indexOf('daily') !== -1;
+        if (hasFacingPair) {
+          // Card 1 front: brain-dump landing page so the binder opens to something useful.
+          var bdFiller = clone('brain-dump');
+          flatPages.push(bdFiller.querySelector('.page'));
+        }
+        result4.items.forEach(function (it) {
+          if (it.spread) {
+            // Spread left page = verso → must land at odd index (back-sheet slot).
+            if (flatPages.length % 2 === 0) flatPages.push(fillerPage());
+            it.spread.forEach(function (p) { flatPages.push(p); });
+          } else {
+            flatPages.push(it.single);
+          }
+        });
+        if (hasInserts) {
+          INSERT_KEYS.forEach(function (key) {
+            var n = inserts[key] || 0;
+            for (var i = 0; i < n; i++) { var ff = clone(key); flatPages.push(ff.querySelector('.page')); }
+          });
+        }
+        var real4 = flatPages.length;
+        while (flatPages.length % 8 !== 0) flatPages.push(fillerPage());
+        layoutFourUpDuplex(mount, flatPages);
+        var sheets4 = mount.querySelectorAll('.sheet').length / 2;
+        setStatus('4-up, 2-sided: ' + real4 + ' pages across ' + sheets4 +
+          ' physical sheets (8 pages/sheet). Print double-sided (long-edge flip), cut into quarters.');
+        return;
+      }
       var seq = buildDuplexOrder(types, start, end);
       if (hasInserts) {
         INSERT_KEYS.forEach(function (key) {
@@ -321,7 +385,7 @@
         while (seq.length % 2 !== 0) seq.push(blankPage());
       }
       var real = seq.filter(function (p) { return !p.classList.contains('blank-page'); }).length;
-      if (tile) {
+      if (tile === '2up') {
         layoutCutStack(mount, seq);
         setStatus('2-sided, 2-up (cut & stack): ' + real + ' planner pages across ' +
           mount.querySelectorAll('.sheet').length + ' landscape sheets. Print double-sided (flip on long edge).');
@@ -333,11 +397,15 @@
       return;
     }
 
+    var chrono = buildChronologicalItems(types, start, end);
+    chrono.items.forEach(function (it) {
+      if (it.spread) it.spread.forEach(function (p) { mount.appendChild(p); });
+      else mount.appendChild(it.single);
+    });
     var parts = [];
     ORDER.forEach(function (type) {
-      if (types.indexOf(type) === -1) return;
-      var n = RENDERERS[type](start, end, mount);
-      parts.push(n + ' ' + (UNIT_NAMES[type] || type));
+      var n = chrono.counts[type];
+      if (n) parts.push(n + ' ' + (UNIT_NAMES[type] || type));
     });
 
     renderInserts(inserts, mount);
@@ -349,7 +417,11 @@
     }
 
     var sheetNote = '';
-    if (tile) {
+    if (tile === '4up') {
+      var pageCount = mount.querySelectorAll('.page').length;
+      tileFourUp(mount);
+      sheetNote = ' → ' + Math.ceil(pageCount / 4) + ' sheets (cut in quarters)';
+    } else if (tile) {
       var pageCount = mount.querySelectorAll('.page').length;
       tilePages(mount);
       sheetNote = ' → ' + Math.ceil(pageCount / 2) + ' landscape sheets (cut in half)';
@@ -1084,6 +1156,8 @@
   function fits(out, paper) { return out.w <= paper.w + 0.5 && out.h <= paper.h + 0.5; }
   // 2-up: two portrait pages side by side on a LANDSCAPE sheet (paper rotated).
   function twoUp(out, paper) { return (2 * out.w <= paper.h + 0.5) && (out.h <= paper.w + 0.5); }
+  // 4-up: 2×2 grid of pages on a PORTRAIT sheet (no rotation).
+  function fourUp(out, paper) { return (2 * out.w <= paper.w + 0.5) && (2 * out.h <= paper.h + 0.5); }
 
   function sizeStyle() {
     var el = document.getElementById('planner-sizes');
@@ -1091,7 +1165,19 @@
     return el;
   }
   function applySizes(out, paper, tile) {
-    if (tile) {
+    if (tile === '4up') {
+      // Portrait sheet holds four pages in a 2×2 grid.
+      var sheetW = paper.w, sheetH = paper.h;
+      var slotW = sheetW / 2, slotH = sheetH / 2;
+      var fx = Math.min(slotW / out.w, 1);
+      var fy = Math.min(slotH / out.h, 1);
+      sizeStyle().textContent =
+        '@page { size: ' + sheetW + 'mm ' + sheetH + 'mm; margin: 0; }\n' +
+        '.page { width: ' + out.w + 'mm; height: ' + out.h + 'mm; }\n' +
+        '.sheet { width: ' + sheetW + 'mm; height: ' + sheetH + 'mm; }\n' +
+        '.sheet .slot { width: ' + slotW + 'mm; height: ' + slotH + 'mm; }\n' +
+        '.sheet .slot .page { transform: scale(' + fx.toFixed(4) + ', ' + fy.toFixed(4) + '); }';
+    } else if (tile) {
       // Landscape sheet holds two portrait pages side by side, each in a half-width slot.
       var sheetW = paper.h, sheetH = paper.w;   // rotated to landscape
       var slotW = sheetW / 2, slotH = sheetH;
@@ -1113,9 +1199,10 @@
     }
   }
 
-  // In tiling mode a paper is allowed if two pages fit at 100%, OR it's the same
-  // size as the planner (we then scale the pages down to fit).
-  function tileAllows(outKey, paperKey) {
+  // In tiling mode a paper is allowed based on the tiling mode chosen.
+  function tileAllows(outKey, paperKey, mode) {
+    if (mode === '4up') return fourUp(SIZES[outKey], SIZES[paperKey]);
+    // 2-up: two pages fit on landscape paper, or same size (scaled down).
     return twoUp(SIZES[outKey], SIZES[paperKey]) || outKey === paperKey;
   }
 
@@ -1125,7 +1212,7 @@
     // Disable paper options that can't hold the chosen planner size (given the mode).
     for (var i = 0; i < paperSel.options.length; i++) {
       var o = paperSel.options[i];
-      o.disabled = tile ? !tileAllows(outSel.value, o.value) : !fits(out, SIZES[o.value]);
+      o.disabled = tile ? !tileAllows(outSel.value, o.value, tile) : !fits(out, SIZES[o.value]);
     }
     if (paperSel.selectedOptions[0].disabled) {
       for (var j = 0; j < paperSel.options.length; j++) {
@@ -1133,19 +1220,23 @@
       }
     }
     var paper = SIZES[paperSel.value];
-    var scaled = tile && outSel.value === paperSel.value && !twoUp(out, paper);
-    var ok = !!paper && (tile ? tileAllows(outSel.value, paperSel.value) : fits(out, paper));
+    var scaled = tile === '2up' && outSel.value === paperSel.value && !twoUp(out, paper);
+    var ok = !!paper && (tile ? tileAllows(outSel.value, paperSel.value, tile) : fits(out, paper));
     applySizes(out, paper || out, tile);
     if (printBtn) printBtn.disabled = !ok;
     if (note) {
       if (ok && scaled) {
         note.textContent = 'Two ' + outSel.value + ' pages scaled onto one ' + paperSel.value + ' landscape sheet — print, then cut down the center.';
+      } else if (ok && tile === '4up') {
+        note.textContent = 'Four ' + outSel.value + ' pages per ' + paperSel.value + ' sheet — print, then cut into quarters.';
       } else if (ok && tile) {
         note.textContent = 'Two ' + outSel.value + ' pages per ' + paperSel.value + ' landscape sheet — print, then cut down the center.';
       } else if (ok) {
         note.textContent = outSel.value + ' planner on ' + paperSel.value + ' paper — prints at 100%, then trim.';
+      } else if (tile === '4up') {
+        note.textContent = 'Four ' + outSel.value + " pages won't fit these sheets — try a larger paper or turn off tiling.";
       } else if (tile) {
-        note.textContent = "Two " + outSel.value + " pages won't fit these sheets — try a larger paper or turn off tiling.";
+        note.textContent = 'Two ' + outSel.value + " pages won't fit these sheets — try a larger paper or turn off tiling.";
       } else {
         note.textContent = outSel.value + " doesn't fit on any smaller sheet — pick a larger paper size.";
       }
@@ -1179,6 +1270,50 @@
     }
   }
 
+  // 4-up duplex imposition for portrait ring-binder pages.
+  // Long-edge flip maps printer-TL→physical-TR, printer-TR→physical-TL, etc.
+  // Content is NOT pre-mirrored; the printer driver handles orientation transparently.
+  // Front (recto, holes-left): [p0, p2, p4, p6] at printer TL/TR/BL/BR.
+  // Back  (verso, holes-right): [p3, p1, p7, p5] at printer TL/TR/BL/BR →
+  //   physical TR/TL/BR/BL, so each back slot sits behind the correct front slot.
+  function layoutFourUpDuplex(mount, pages) {
+    for (var i = 0; i < pages.length; i += 8) {
+      var p = pages.slice(i, i + 8);
+      var front = document.createElement('div');
+      front.className = 'sheet cut4';
+      front.appendChild(slotFor(p[0])); // printer TL → physical TL front
+      front.appendChild(slotFor(p[2])); // printer TR → physical TR front
+      front.appendChild(slotFor(p[4])); // printer BL → physical BL front
+      front.appendChild(slotFor(p[6])); // printer BR → physical BR front
+      mount.appendChild(front);
+
+      var back = document.createElement('div');
+      back.className = 'sheet cut4 duplex-back';
+      back.appendChild(slotFor(p[3])); // printer TL → physical TR back (pairs with p[2])
+      back.appendChild(slotFor(p[1])); // printer TR → physical TL back (pairs with p[0])
+      back.appendChild(slotFor(p[7])); // printer BL → physical BR back (pairs with p[6])
+      back.appendChild(slotFor(p[5])); // printer BR → physical BL back (pairs with p[4])
+      mount.appendChild(back);
+    }
+  }
+
+  // Wrap already-rendered .page elements four-per-sheet (2×2 grid) for portrait tiling.
+  function tileFourUp(mount) {
+    var pages = Array.prototype.slice.call(mount.querySelectorAll('.page'));
+    mount.innerHTML = '';
+    while (pages.length % 4 !== 0) {
+      var blank = document.createElement('div');
+      blank.className = 'page blank-page';
+      pages.push(blank);
+    }
+    for (var i = 0; i < pages.length; i += 4) {
+      var sheet = document.createElement('div');
+      sheet.className = 'sheet cut4';
+      for (var j = 0; j < 4; j++) sheet.appendChild(slotFor(pages[i + j]));
+      mount.appendChild(sheet);
+    }
+  }
+
   function initGenerator() {
     document.addEventListener('DOMContentLoaded', function () {
       var startEl = document.getElementById('start');
@@ -1193,6 +1328,20 @@
       var now = new Date();
       startEl.value = ymd(new Date(now.getFullYear(), now.getMonth(), 1));        // 1st of this month
       endEl.value = ymd(new Date(now.getFullYear(), now.getMonth() + 1, 0));       // last day of this month
+
+      // ---- Defaults ----
+      if (outSel) outSel.value = 'Mini';
+      if (tileEl) tileEl.value = '4up';
+      if (duplexEl) duplexEl.checked = true;
+      ['monthly', 'weekly', 'daily', 'thanks', 'habit-tracker', 'one-line', 'mood-tracker', 'weekly-review'].forEach(function (t) {
+        var el = document.getElementById('chk-' + t);
+        if (el) el.checked = true;
+      });
+      var INS_DEFAULTS = { 'brain-dump': 4, 'collections': 2, 'sketch': 4, 'expense-log': 1, 'future-log': 1, 'project': 2 };
+      INSERT_KEYS.forEach(function (k) {
+        var el = document.getElementById('ins-' + k);
+        if (el && INS_DEFAULTS[k]) el.value = INS_DEFAULTS[k];
+      });
 
       if (themeEl) {
         buildCustomPanel();
@@ -1213,7 +1362,7 @@
         onTheme();
       }
 
-      var tileOn = function () { return !!(tileEl && tileEl.checked); };
+      var tileOn = function () { return tileEl ? tileEl.value : ''; };
       var revalidate = function () {
         if (outSel && paperSel) validateSizes(outSel, paperSel, printBtn, fitNote, tileOn());
       };
@@ -1237,11 +1386,10 @@
         paperSel.addEventListener('change', revalidate);
       }
       if (tileEl) {
-        // Tiling changes both the fit rule and the page grouping — revalidate then rebuild.
         tileEl.addEventListener('change', function () { revalidate(); run(); });
       }
       if (duplexEl) {
-        duplexEl.addEventListener('change', run);
+        duplexEl.addEventListener('change', function () { revalidate(); run(); });
       }
 
       revalidate();

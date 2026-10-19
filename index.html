@@ -38,6 +38,8 @@
       <label>Expense Log <input type="number" id="ins-expense-log" class="ins-count" value="0" min="0" max="99"></label>
       <label>Future Log <input type="number" id="ins-future-log" class="ins-count" value="0" min="0" max="99"></label>
       <label>Project <input type="number" id="ins-project" class="ins-count" value="0" min="0" max="99"></label>
+      <label>Grid <input type="number" id="ins-grid" class="ins-count" value="0" min="0" max="99"></label>
+      <label>Dot Grid <input type="number" id="ins-dot-grid" class="ins-count" value="0" min="0" max="99"></label>
     </div>
     <div class="row">
       <label>Theme
@@ -77,7 +79,11 @@
           <option value="Legal">Legal</option>
         </select>
       </label>
-      <label><input type="checkbox" id="tile"> Tile 2-up (landscape, cut in half)</label>
+      <label>Tile: <select id="tile">
+        <option value="">None</option>
+        <option value="2up">2-up (landscape, cut in half)</option>
+        <option value="4up">4-up (portrait, cut in quarters)</option>
+      </select></label>
       <label><input type="checkbox" id="duplex"> 2-sided order (duplex)</label>
       <span id="fit-note" class="hint"></span>
     </div>
@@ -285,9 +291,12 @@
       </div>
       <div class="thanks-body">
         <h4 class="label">Gratitude</h4>
-        <div class="thanks-prompt"><span class="thanks-label">I am grateful for…</span><div class="line"></div></div>
-        <div class="thanks-prompt"><span class="thanks-label">I am grateful for…</span><div class="line"></div></div>
-        <div class="thanks-prompt"><span class="thanks-label">I am grateful for…</span><div class="line"></div></div>
+        <div class="thanks-prompt">
+          <span class="thanks-label">I am grateful for…</span>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
         <h4 class="label" style="margin-top:5mm;">Today's Intention</h4>
         <div class="box lines fill-lines" style="flex:1;">
           <div class="line"></div><div class="line"></div><div class="line"></div>
@@ -516,6 +525,16 @@
         <div class="line"><span class="num">10</span></div>
       </div>
     </div>
+  </template>
+
+  <!-- ============ Grid template ============ -->
+  <template id="tpl-grid">
+    <div class="page grid"></div>
+  </template>
+
+  <!-- ============ Dot Grid template ============ -->
+  <template id="tpl-dot-grid">
+    <div class="page dot-grid"></div>
   </template>
 
   <script src="js/planner.js"></script>
