@@ -59,11 +59,20 @@
 
   var _fillerIdx = 0;
   var FILLER_CYCLE = ['grid', 'dot-grid', 'collections'];
-  function fillerPage() {
-    var type = FILLER_CYCLE[_fillerIdx++ % FILLER_CYCLE.length];
-    var f = clone(type);
-    return f.querySelector('.page');
+  function fillerType() {
+    var el = document.getElementById('filler-type');
+    return el ? el.value : 'random';
   }
+  // Padding page used to keep spreads on facing leaves and to round out the last sheet.
+  // `type` overrides the user's choice (used for the opening page); 'random' cycles the mix.
+  function fillerPage(type) {
+    type = type || fillerType();
+    if (type === 'random') type = FILLER_CYCLE[_fillerIdx++ % FILLER_CYCLE.length];
+    var page = type === 'blank' ? blankPage() : clone(type).querySelector('.page');
+    page.setAttribute('data-filler', '1');
+    return page;
+  }
+  function isFiller(p) { return p.hasAttribute('data-filler') || p.classList.contains('blank-page'); }
 
   // ---- range iterators ----
 
@@ -103,9 +112,10 @@
     return n;
   }
 
-  function renderInserts(inserts, mount) {
+  function renderInserts(inserts, mount, skip) {
     if (!inserts) return;
     INSERT_KEYS.forEach(function (key) {
+      if (skip && skip[key]) return;
       var n = inserts[key] || 0;
       for (var i = 0; i < n; i++) {
         mount.appendChild(buildInsert(key));
@@ -171,8 +181,10 @@
 
   function fillStSheet(page) {
     var html = '';
-    getBranches().forEach(function (name) {
-      html += '<div class="st-stat"><span class="st-stat-name">' + esc(name) + '</span>' +
+    getBranches().forEach(function (name, i) {
+      html += '<div class="st-stat"><span class="st-ic" data-i="' + (i % 5) + '"></span>' +
+              '<div class="st-stat-main"><span class="st-stat-name">' + esc(name) + '</span>' +
+              '<div class="st-stat-focus"><span>Focus</span><i></i></div></div>' +
               '<span class="st-stat-lv">Lv</span><div class="st-stat-box"></div></div>';
     });
     page.querySelector('.st-stats').innerHTML = html;
@@ -223,27 +235,49 @@
     page.querySelector('.st-quest-rows').innerHTML = html;
   }
 
-  function buildStSquaresPage(monthDate) {
+  // One squares grid covering days [from, to]. `cols` is the fixed column count so a
+  // short final half (days 17-31 = 15 days) keeps the same cell width as the first.
+  function buildStSquaresPage(monthDate, from, to, cols) {
     var f = clone('st-squares');
     f.querySelector('.js-month').textContent = MONTHS[monthDate.getMonth()] + ' ' + monthDate.getFullYear();
     var daysIn = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate();
+    from = from || 1; to = to || 31; cols = cols || 31;
+    var page = f.querySelector('.page');
+    var grid = f.querySelector('.st-sq-grid');
+    grid.style.setProperty('--sq-cols', cols);
     var html = '<div class="sq-cell sq-corner"></div>';
-    for (var d = 1; d <= 31; d++) {
-      html += '<div class="sq-cell sq-day' + (d > daysIn ? ' blank' : '') + '">' + (d <= daysIn ? d : '') + '</div>';
+    for (var d = from; d < from + cols; d++) {
+      var off = d > daysIn || d > to;
+      html += '<div class="sq-cell sq-day' + (off ? ' blank' : '') + '">' + (off ? '' : d) + '</div>';
     }
     getBranches().forEach(function (name, b) {
       html += '<div class="sq-branch">' + esc(name) + '</div>';
       for (var s = 0; s < ST_SKILLS; s++) {
         html += '<div class="sq-cell sq-code">' + skillCode(b, s) + '</div>';
-        for (var d2 = 1; d2 <= 31; d2++) html += '<div class="sq-cell' + (d2 > daysIn ? ' blank' : '') + '"></div>';
+        for (var d2 = from; d2 < from + cols; d2++) html += '<div class="sq-cell' + (d2 > daysIn || d2 > to ? ' blank' : '') + '"></div>';
       }
     });
-    f.querySelector('.st-sq-grid').innerHTML = html;
-    return f.querySelector('.page');
+    grid.innerHTML = html;
+    if (cols < 31) page.classList.add('sq-half');
+    return page;
+  }
+  function isMiniOut() {
+    var el = document.getElementById('outsize');
+    return !!el && el.value === 'Mini';
+  }
+  // Mini squares are a verso/recto spread (days 1-16 | 17-31) — 31 columns on a
+  // 81 mm page are unreadable. Other sizes stay a single page.
+  function buildStSquaresItem(monthDate) {
+    if (!isMiniOut()) return { single: buildStSquaresPage(monthDate) };
+    return { spread: [buildStSquaresPage(monthDate, 1, 16, 16), buildStSquaresPage(monthDate, 17, 31, 16)] };
   }
   function renderStSquares(start, end, mount) {
     var n = 0;
-    eachMonth(start, end, function (cur) { mount.appendChild(buildStSquaresPage(cur)); n++; });
+    eachMonth(start, end, function (cur) {
+      var it = buildStSquaresItem(cur);
+      (it.spread || [it.single]).forEach(function (p) { mount.appendChild(p); });
+      n++;
+    });
     return n;
   }
 
@@ -251,8 +285,8 @@
     var f = clone('st-month-end');
     f.querySelector('.js-month').textContent = MONTHS[monthDate.getMonth()] + ' ' + monthDate.getFullYear();
     var html = '';
-    getBranches().forEach(function (name) {
-      html += '<div class="st-me-row"><span class="st-me-name">' + esc(name) + '</span>' +
+    getBranches().forEach(function (name, i) {
+      html += '<div class="st-me-row"><span class="st-me-name"><span class="st-ic" data-i="' + (i % 5) + '"></span>' + esc(name) + '</span>' +
               '<div class="st-stat-box"></div><div class="st-stat-box"></div></div>';
     });
     f.querySelector('.st-me-rows').innerHTML = html;
@@ -262,6 +296,181 @@
     var n = 0;
     eachMonth(start, end, function (cur) { mount.appendChild(buildStMonthEndPage(cur)); n++; });
     return n;
+  }
+
+  // ---- Instruction pages ----
+  // Everything here is built from what is actually switched on: a page type (or insert)
+  // that isn't in the book never appears in the instructions.
+  var SKILL_IDEAS = [
+    ['Walk 10 minutes', 'Stretch or mobility', 'Drink 2 L of water', 'Lights out by 11', 'Strength workout'],
+    ['Read 10 pages', 'Meditate 5 minutes', 'Language lesson', 'Journal one page', 'No phone first hour'],
+    ['Practice an instrument', 'Write 200 words', 'Sketch something', 'Side project 30 min', 'Course lesson'],
+    ['Text or call someone', 'Device-free meal', 'Thank someone', 'Quality time', 'Write a note'],
+    ['10-minute tidy', 'Log spending', 'Cook at home', 'Move money to savings', 'One admin task']
+  ];
+  var guideFillers = false;   // set by generate(): fillers only exist in 4-up books
+
+  function guideCtx(types, inserts) {
+    return {
+      has: function (t) { return types.indexOf(t) !== -1; },
+      n: function (k) { return (inserts && inserts[k]) || 0; },
+      mini: isMiniOut()
+    };
+  }
+  function listPage(tplId, items) {
+    var page = clone(tplId).querySelector('.page');
+    page.querySelector('.gd-list').innerHTML = items.map(function (t) { return '<li>' + t + '</li>'; }).join('');
+    return page;
+  }
+  // Pair pages into verso|recto spreads; a trailing odd page stays single.
+  function pagesToItems(pages) {
+    var out = [];
+    for (var i = 0; i < pages.length; i += 2) {
+      out.push(pages[i + 1] ? { spread: [pages[i], pages[i + 1]] } : { single: pages[i] });
+    }
+    return out;
+  }
+  // Greedy split of entries into pages by text length (entries are never cut).
+  function paginate(entries, cap) {
+    var pages = [[]], used = 0;
+    entries.forEach(function (e) {
+      var len = e.replace(/<[^>]+>/g, '').replace(/&[a-z]+;/g, '-').length;
+      if (used + len > cap && pages[pages.length - 1].length) { pages.push([]); used = 0; }
+      pages[pages.length - 1].push(e);
+      used += len;
+    });
+    return pages;
+  }
+
+  // Approximate characters per instruction page, by output size (text is 5.6-7.5pt).
+  function guideCap(kind) {
+    var el = document.getElementById('outsize'), size = el ? el.value : 'Mini';
+    var caps = { Mini: { play: 1650, pages: 950 }, A6: { play: 1300, pages: 800 } };
+    return (caps[size] || { play: 3000, pages: 1500 })[kind];
+  }
+
+  function skillGuideItems(types, inserts) {
+    var c = guideCtx(types, inserts);
+    var sheet = c.n('st-sheet'), key = c.n('st-key'), tree = c.n('st-tree'), loot = c.n('st-loot'), quest = c.n('st-quest');
+    var sq = c.has('st-squares'), me = c.has('st-month-end');
+    if (!(sheet || key || tree || loot || quest || sq || me)) return [];
+    var steps = [];
+    if (sheet) steps.push('<b>Your Character Sheet.</b> Name your hero and write your Why. Under each stat, note the skill you&rsquo;re focusing on. Update Level and Total XP ' + (me ? 'at Month&rsquo;s End.' : 'as you grow.'));
+    if (key || sq) steps.push('<b>Pick your skills.</b> ' + (key ? 'On the Skill Key, name' : 'Name') + ' up to 3 skills per branch. Small and specific beats big: &ldquo;read 10 pages,&rdquo; not &ldquo;read more.&rdquo; Rate each skill&rsquo;s XP: 1 easy, 2 steady, 3 hard.');
+    if (sq) steps.push('<b>Fill a square.</b> Each day you do a skill, fill its square on Skill Squares. A tiny version still counts. A missed day costs nothing &mdash; progress never resets.');
+    if (me) steps.push('<b>Month&rsquo;s End.</b> ' + (sq ? 'Count squares per branch. Squares &times; skill XP = branch XP.' : 'Tally each branch&rsquo;s XP: days practiced &times; skill XP.') + (quest ? ' Add bonus XP from finished quests.' : '') + ' Write the totals on Month&rsquo;s End' + (sheet ? ' and your Character Sheet.' : '.'));
+    if (tree) steps.push('<b>Grow the tree.</b> Every 20 XP in a branch fills one bubble (top tier first). Every 7 bubbles across the whole tree = 1 level, so Level 10 is 70 bubbles &mdash; about a season of play.');
+    if (loot) steps.push('<b>Claim loot.</b> Fill the Loot Table <i>before</i> you start: small rewards early, big ones later. Tick a reward when you reach its level.');
+    if (quest) {
+      steps.push('<b>Quests are side missions, not habits.</b> Write the quest, the <i>why</i>, the reward and a due date. Keep 3&ndash;5 open. Bonus XP on finish: 10 small, 25 medium, 50 epic, added to the branch it trained.');
+      steps.push('<b>Name the monster.</b> A fear or obstacle you&rsquo;ve been dodging makes a great quest. Break it into sub-quests, and note who or what you&rsquo;ll need (a partner, a book, a tool).');
+    }
+    if (sheet) steps.push('<b>Name your chapter.</b> Use the Season line on the Character Sheet for the stage of life you&rsquo;re in, such as &ldquo;The Reset&rdquo; or &ldquo;Year of the Garden.&rdquo; Change it when life does.');
+    if (sq || me) {
+      var carry = [tree ? 'tree' : '', sheet ? 'sheet' : '', loot ? 'loot' : ''].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' and $1');
+      steps.push('<b>Next month.</b> Keep a skill if it&rsquo;s still a stretch; swap it if it&rsquo;s automatic or ignored. Squares start fresh each month.' + (carry ? ' The ' + carry + ' carry over.' : ''));
+    }
+    var pages = paginate(steps, guideCap('play')).map(function (entries, i) {
+      var page = listPage('st-guide-play', entries);
+      if (i) page.querySelector('.title').lastChild.textContent = ' How to Play (cont.)';
+      return page;
+    });
+    if (key || sq) {
+      var ideas = clone('st-guide-ideas').querySelector('.page');
+      var custom = stState.set === 'custom';
+      var html = '';
+      getBranches().forEach(function (name, b) {
+        html += '<div class="gd-branch"><div class="gd-bname">' + esc(name) + '</div>';
+        if (custom) html += '<div class="gd-blank"></div><div class="gd-blank"></div>';
+        else html += '<ul>' + SKILL_IDEAS[b].map(function (i) { return '<li>' + esc(i) + '</li>'; }).join('') + '</ul>';
+        html += '</div>';
+      });
+      ideas.querySelector('.gd-ideas').innerHTML = html;
+      pages.push(ideas);
+    }
+    return pagesToItems(pages);
+  }
+
+  var INSERT_HELP = {
+    'brain-dump': '<b>Brain Dump.</b> Empty your head before you plan: tasks, worries and ideas in any order. Circle what matters and move it into the week.',
+    'collections': '<b>Collections.</b> Numbered running lists that grow over time: books to read, movies, gift ideas, places to go.',
+    'sketch': '<b>Sketch.</b> A free box for doodles, floor plans and rough layouts.',
+    'expense-log': '<b>Expense Log.</b> Date, description, amount. Total each page when it&rsquo;s full and carry the total forward.',
+    'future-log': '<b>Future Log.</b> Six boxes for upcoming months. Write the month on each, then drop in dates, deadlines and ideas. Move them to the Monthly page when the month arrives.',
+    'project': '<b>Project.</b> Name it, state the goal and deadline, then break it into numbered steps. Pull one step at a time into your weekly Top 3.',
+    'grid': '<b>Grid.</b> Square-ruled space for tables, charts and diagrams.',
+    'dot-grid': '<b>Dot Grid.</b> Dotted space for layouts, mind maps and lettering.'
+  };
+  var FILLER_HELP = {
+    'grid': 'Grid (tables, charts, diagrams)',
+    'dot-grid': 'Dot Grid (layouts, mind maps, lettering)',
+    'collections': 'Collections (running lists)',
+    'brain-dump': 'Brain Dump (empty your head)',
+    'sketch': 'Sketch (doodles, rough ideas)'
+  };
+  function fillerEntry(c) {
+    if (!guideFillers) return null;
+    var t = fillerType();
+    var intro = '<b>Bonus pages.</b> Leftover pages that keep spreads facing and finish the last sheet ';
+    if (t === 'blank') return intro + 'are blank. Use them for anything: notes, doodles, a messy list. Nothing here is required.';
+    if (t !== 'random') return intro + 'are ' + (FILLER_HELP[t] || t).replace(/ \(/, ' pages (') + '. Use them freely.';
+    var mix = ['grid', 'dot-grid', 'collections'];
+    if (!c.n('st-sheet')) mix.push('brain-dump');
+    return intro + 'are a rotating mix: ' + mix.map(function (k) { return FILLER_HELP[k]; }).join(', ').replace(/, ([^,]*)$/, ' and $1') + '. Use them freely.';
+  }
+
+  function plannerGuideItems(types, inserts) {
+    var c = guideCtx(types, inserts), has = c.has, mini = c.mini;
+    var PLANNER_TYPES = ['monthly', 'weekly', 'daily', 'thanks', 'habit-tracker', 'one-line', 'mood-tracker', 'weekly-review'];
+    var hasPlanner = PLANNER_TYPES.some(has);
+    var how = [];
+    if (hasPlanner) {
+      how.push('<b>Zoom in, zoom out.</b> The month sets the direction, the week makes the plan, the day gets it done. Each level feeds the next: monthly goals, then the weekly Top 3, then the daily priorities.');
+      if (has('weekly') || has('daily') || has('monthly')) {
+        how.push('<b>Book order.</b> Pages follow the calendar: the month pages come first, then each week, followed by that week&rsquo;s days. Just keep turning forward.');
+      }
+      var facing = [];
+      if (has('monthly')) facing.push('a month opens Mon&ndash;Thu on the left and Fri&ndash;Sun with Goals and Notes on the right');
+      if (has('weekly')) facing.push('a week opens the same way, with Notes under the weekend');
+      if (has('thanks') && has('daily')) facing.push('on any day, Thankfulness is on the left and the Daily page is on the right');
+      if (facing.length) { var ft = facing.join('; '); how.push('<b>Facing pages.</b> ' + ft.charAt(0).toUpperCase() + ft.slice(1) + '.'); }
+      if (has('weekly')) how.push('<b>Sunday reset (5 min).</b> Look back over the week, carry forward anything unfinished, and choose next week&rsquo;s Top 3. Write plans in the day blocks as they come up.');
+      if (has('daily')) how.push('<b>Daily rhythm.</b> Morning: pick your priorities' + (has('weekly') ? ' from the week&rsquo;s Top 3' : '') + ' and fill the to-do list. ' + (has('thanks') ? 'Evening: write your gratitude.' : 'Evening: look at what got done.') + ' Move leftovers to tomorrow or drop them.');
+      how.push('<b>Missed a day?</b> Skip it. Don&rsquo;t backfill; start fresh on today&rsquo;s page. A blank page isn&rsquo;t a failure.');
+    }
+    how.push('<b>Binding.</b> After printing double-sided and cutting along the dashed lines, punch the holes at the grey guide dots.');
+
+    var pg = [];
+    if (has('monthly')) pg.push('<b>Monthly.</b> The big picture. Put deadlines, trips and appointments on the calendar, write up to three Goals, and keep Notes for ideas you&rsquo;ll come back to.');
+    if (has('weekly')) pg.push('<b>Weekly.</b> Choose a Top 3 for the week, then give each day a few words. The weekend and Notes are on the facing page.');
+    if (has('daily')) {
+      pg.push(mini
+        ? '<b>Daily.</b> Pick your Top 3, then list to-dos. Each to-do gets two lines: a checkbox line and a line for details. Finish with a One-Line Win.'
+        : '<b>Daily.</b> Pick your Top 5, list to-dos, and sketch the day in Morning, Afternoon and Night. Close with Self Reflection.');
+    }
+    if (has('thanks')) pg.push('<b>Thankfulness.</b> Three things you&rsquo;re grateful for and one intention for the day. Small and specific works best: &ldquo;the warm mug,&rdquo; not &ldquo;my life.&rdquo;');
+    if (has('habit-tracker')) pg.push('<b>Habit Tracker.</b> Name up to seven habits across the top and tick a box each day. Aim for streaks, and don&rsquo;t let one miss end one.');
+    if (has('one-line')) pg.push('<b>One Line a Day.</b> One sentence per day: what happened, not how you felt about it. Read the month back at the end.');
+    if (has('mood-tracker')) pg.push('<b>Mood Tracker.</b> Choose a colour for each mood in the legend, then colour one box a day. Patterns appear by month&rsquo;s end.');
+    if (has('weekly-review')) pg.push('<b>Weekly Review.</b> What went well, what to improve, next week&rsquo;s focus. Use the answers to write the next Top 3.');
+    if (has('st-squares') || has('st-month-end')) pg.push('<b>Skill Squares &amp; Month&rsquo;s End.</b> The game layer. See How to Play at the front of the book.');
+    INSERT_KEYS.forEach(function (k) { if (INSERT_HELP[k] && c.n(k) > 0) pg.push(INSERT_HELP[k]); });
+    var fe = fillerEntry(c);
+    if (fe) pg.push(fe);
+
+    var pages = [];
+    if (hasPlanner) pages.push(listPage('pl-guide-how', how));
+    var cap = guideCap('pages');
+    if (pg.length) {
+      paginate(pg, cap).forEach(function (entries, i) {
+        var page = listPage('pl-guide-pages', entries);
+        if (i) page.querySelector('.title').lastChild.textContent = ' Page by Page (cont.)';
+        pages.push(page);
+      });
+    } else if (!hasPlanner) {
+      return [];
+    }
+    return pagesToItems(pages);
   }
 
   // Inserts whose bodies depend on the selected branch set are filled after cloning.
@@ -281,7 +490,7 @@
   };
 
   var UNIT_NAMES = {
-    'st-squares': 'skill square trackers', 'st-month-end': 'skill tree month-end pages',
+    'st-guide': 'instruction spread', 'st-squares': 'skill square trackers', 'st-month-end': 'skill tree month-end pages',
     monthly: 'month spreads', weekly: 'week spreads', daily: 'day pages',
     thanks: 'thankfulness pages', 'habit-tracker': 'habit trackers',
     'one-line': 'one-line pages', 'mood-tracker': 'mood trackers',
@@ -380,7 +589,7 @@
     'st-squares': renderStSquares, 'st-month-end': renderStMonthEnd
   };
   var ORDER = ['monthly', 'weekly', 'daily', 'thanks', 'habit-tracker', 'one-line', 'mood-tracker', 'weekly-review',
-               'st-squares', 'st-month-end'];
+               'st-squares', 'st-month-end', 'st-guide'];
 
   // Build the chronological reading order for 2-sided printing:
   // leading blank (so months start on page 2), all month spreads,
@@ -394,20 +603,66 @@
   // thanks always lands at an odd flat-page index (back-sheet, verso) and daily at
   // the next even index (front-sheet, recto) — regardless of how many single pages
   // (weekly-review, habit-tracker, etc.) precede them.
-  function buildChronologicalItems(types, start, end, facingLayout) {
+  // Skill Tree inserts lead the book instead of trailing it: character sheet alone on
+  // the first recto, then facing spreads of Skill Key | Skill Tree and Quest Log | Loot Table.
+  var FRONT_INSERTS = ['st-sheet', 'st-key', 'st-tree', 'st-quest', 'st-loot'];
+  function consumedInserts() {
+    var c = {};
+    FRONT_INSERTS.forEach(function (k) { c[k] = true; });
+    return c;
+  }
+  function insertItems(inserts, key) {
+    var out = [];
+    var n = (inserts && inserts[key]) || 0;
+    for (var i = 0; i < n; i++) out.push({ single: buildInsert(key) });
+    return out;
+  }
+
+  // Pair two single-page item lists into verso|recto spreads; any surplus stays single.
+  function pairItems(left, right) {
+    var out = [], n = Math.max(left.length, right.length);
+    for (var i = 0; i < n; i++) {
+      if (left[i] && right[i]) out.push({ spread: [left[i].single, right[i].single] });
+      else out.push(left[i] || right[i]);
+    }
+    return out;
+  }
+
+  function buildChronologicalItems(types, start, end, facingLayout, inserts) {
     var items = [];
+    function push(it) { items.push(it); }
+    insertItems(inserts, 'st-sheet').forEach(push);
+    var wantGuide = types.indexOf('st-guide') !== -1;
+    if (wantGuide) skillGuideItems(types, inserts).forEach(push);
+    pairItems(insertItems(inserts, 'st-key'), insertItems(inserts, 'st-tree')).forEach(push);
+    pairItems(insertItems(inserts, 'st-quest'), insertItems(inserts, 'st-loot')).forEach(push);
     var counts = {};
+    if (types.indexOf('st-guide') !== -1) counts['st-guide'] = 1;
     function add(type, item) { items.push(item); counts[type] = (counts[type] || 0) + 1; }
     var hasDaily  = types.indexOf('daily')  !== -1;
     var hasThanks = types.indexOf('thanks') !== -1;
+
+    // Skill Tree month pages stay with the character sheet / quest log at the front.
+    // A single-page squares grid faces its Month's End; Mini's two-page squares spread
+    // is followed by Month's End on its own leaf.
+    eachMonth(start, end, function (cur) {
+      var sq = types.indexOf('st-squares') !== -1 ? buildStSquaresItem(cur) : null;
+      var me = types.indexOf('st-month-end') !== -1 ? { single: buildStMonthEndPage(cur) } : null;
+      if (sq && me && sq.single) {
+        add('st-squares', { spread: [sq.single, me.single] });
+      } else {
+        if (sq) add('st-squares', sq);
+        if (me) add('st-month-end', me);
+      }
+    });
+
+    if (wantGuide) plannerGuideItems(types, inserts).forEach(push);
 
     eachMonth(start, end, function (cur) {
       if (types.indexOf('monthly') !== -1)       add('monthly',       { spread: buildMonthlySpread(cur) });
       if (types.indexOf('habit-tracker') !== -1) add('habit-tracker', { single: buildHabitTrackerPage(cur) });
       if (types.indexOf('one-line') !== -1)      add('one-line',      { spread: buildOneLineSpread(cur) });
       if (types.indexOf('mood-tracker') !== -1)  add('mood-tracker',  { single: buildMoodTrackerPage(cur) });
-      if (types.indexOf('st-squares') !== -1)    add('st-squares',    { single: buildStSquaresPage(cur) });
-      if (types.indexOf('st-month-end') !== -1)  add('st-month-end',  { single: buildStMonthEndPage(cur) });
     });
 
     eachWeek(start, end, function (m) {
@@ -431,8 +686,8 @@
   }
 
   // Blanks pad before any spread that wouldn't start on a facing (even) page.
-  function buildDuplexOrder(types, start, end) {
-    var result = buildChronologicalItems(types, start, end);
+  function buildDuplexOrder(types, start, end, inserts) {
+    var result = buildChronologicalItems(types, start, end, false, inserts);
     var pages = [blankPage()];   // page 1 blank → content starts on page 2
     result.items.forEach(function (it) {
       if (it.spread) {
@@ -466,6 +721,7 @@
   }
 
   function generate(types, start, end, tile, duplex, inserts) {
+    guideFillers = tile === '4up';
     var mount = document.getElementById('pages');
     mount.innerHTML = '';
     document.body.classList.toggle('duplex-mode', !!duplex);
@@ -483,19 +739,16 @@
       if (tile === '4up') {
         // 8 pages per sheet: 4 front (recto, holes-left) + 4 back (verso, holes-right).
         // facingLayout=true generates thanks(verso) before daily(recto) per day.
-        // A leading filler at index 0 ensures thanks_1 lands at index 1 (back-sheet).
-        var result4 = buildChronologicalItems(types, start, end, true);
+        _fillerIdx = 0;
+        var result4 = buildChronologicalItems(types, start, end, true, inserts);
         var flatPages = [];
-        var hasFacingPair = types.indexOf('thanks') !== -1 && types.indexOf('daily') !== -1;
-        if (hasFacingPair) {
-          // Card 1 front: brain-dump landing page so the binder opens to something useful.
-          var bdFiller = clone('brain-dump');
-          flatPages.push(bdFiller.querySelector('.page'));
-        }
+        // If the book opens on a spread, page 1 (recto) is a filler. For the random mix
+        // it's a brain dump so the binder opens to something useful.
+        var openType = fillerType() === 'random' ? 'brain-dump' : fillerType();
         result4.items.forEach(function (it) {
           if (it.spread) {
             // Spread left page = verso → must land at odd index (back-sheet slot).
-            if (flatPages.length % 2 === 0) flatPages.push(fillerPage());
+            if (flatPages.length % 2 === 0) flatPages.push(fillerPage(flatPages.length === 0 ? openType : undefined));
             it.spread.forEach(function (p) { flatPages.push(p); });
           } else {
             flatPages.push(it.single);
@@ -503,11 +756,12 @@
         });
         if (hasInserts) {
           INSERT_KEYS.forEach(function (key) {
+            if (consumedInserts(types)[key]) return;
             var n = inserts[key] || 0;
             for (var i = 0; i < n; i++) { flatPages.push(buildInsert(key)); }
           });
         }
-        var real4 = flatPages.length;
+        var real4 = flatPages.filter(function (p) { return !isFiller(p); }).length;
         while (flatPages.length % 8 !== 0) flatPages.push(fillerPage());
         layoutFourUpDuplex(mount, flatPages);
         var sheets4 = mount.querySelectorAll('.sheet').length / 2;
@@ -515,9 +769,10 @@
           ' physical sheets (8 pages/sheet). Print double-sided (long-edge flip), cut into quarters.');
         return;
       }
-      var seq = buildDuplexOrder(types, start, end);
+      var seq = buildDuplexOrder(types, start, end, inserts);
       if (hasInserts) {
         INSERT_KEYS.forEach(function (key) {
+          if (consumedInserts(types)[key]) return;
           var n = inserts[key] || 0;
           for (var i = 0; i < n; i++) { seq.push(buildInsert(key)); }
         });
@@ -536,7 +791,8 @@
       return;
     }
 
-    var chrono = buildChronologicalItems(types, start, end);
+    var chrono = buildChronologicalItems(types, start, end, false, inserts);
+    var consumed = consumedInserts(types);
     chrono.items.forEach(function (it) {
       if (it.spread) it.spread.forEach(function (p) { mount.appendChild(p); });
       else mount.appendChild(it.single);
@@ -547,7 +803,7 @@
       if (n) parts.push(n + ' ' + (UNIT_NAMES[type] || type));
     });
 
-    renderInserts(inserts, mount);
+    renderInserts(inserts, mount, consumed);
     if (hasInserts) {
       INSERT_KEYS.forEach(function (k) {
         var n = inserts[k] || 0;
@@ -574,7 +830,7 @@
   }
 
   var THEMES = ['theme-ocean', 'theme-blossom', 'theme-forest', 'theme-noir',
-                'theme-midnight', 'theme-sunset', 'theme-lavender', 'theme-mint', 'theme-sepia', 'theme-bw'];
+                'theme-midnight', 'theme-sunset', 'theme-lavender', 'theme-mint', 'theme-sepia', 'theme-bw', 'theme-homebrew'];
   function applyTheme(cls) {
     THEMES.forEach(function (t) { document.body.classList.remove(t); });
     if (cls) document.body.classList.add(cls);
@@ -592,7 +848,7 @@
     ['--daynum-ink', 'Date number'], ['--blank-bg', 'Blank cell fill']
   ];
   var CUSTOM_PROPS = COLOR_VARS.map(function (v) { return v[0]; })
-    .concat(['--screen-bg', '--font-body', '--font-weight', '--mark', '--ornament', '--quote', '--watermark']);
+    .concat(['--screen-bg', '--font-body', '--font-rpg', '--font-weight', '--mark', '--ornament', '--quote', '--watermark']);
   var FONTS = [
     // system
     ['Georgia, "Times New Roman", serif', 'Georgia (serif)'],
@@ -1228,6 +1484,7 @@
     COLOR_VARS.forEach(function (v) { b.style.setProperty(v[0], customInputs[v[0]].value); });
     b.style.setProperty('--screen-bg', mix(customInputs['--bg'].value, '#000000', 0.16));
     b.style.setProperty('--font-body', fontSel.value);
+    b.style.setProperty('--font-rpg', fontSel.value);
     b.style.setProperty('--font-weight', weightSel.value);
     b.style.setProperty('--mark', '"' + markIn.value + '"');
     b.style.setProperty('--ornament', '"' + ornIn.value + '"');
@@ -1359,6 +1616,8 @@
       }
     }
     var paper = SIZES[paperSel.value];
+    var printPaper = document.getElementById('print-paper');
+    if (printPaper) printPaper.textContent = paperSel.value + (tile === '2up' ? ' (landscape)' : '');
     var scaled = tile === '2up' && outSel.value === paperSel.value && !twoUp(out, paper);
     var ok = !!paper && (tile ? tileAllows(outSel.value, paperSel.value, tile) : fits(out, paper));
     applySizes(out, paper || out, tile);
@@ -1440,11 +1699,7 @@
   function tileFourUp(mount) {
     var pages = Array.prototype.slice.call(mount.querySelectorAll('.page'));
     mount.innerHTML = '';
-    while (pages.length % 4 !== 0) {
-      var blank = document.createElement('div');
-      blank.className = 'page blank-page';
-      pages.push(blank);
-    }
+    while (pages.length % 4 !== 0) pages.push(fillerPage());
     for (var i = 0; i < pages.length; i += 4) {
       var sheet = document.createElement('div');
       sheet.className = 'sheet cut4';
@@ -1465,22 +1720,31 @@
       var tileEl = document.getElementById('tile');
       var duplexEl = document.getElementById('duplex');
       var now = new Date();
-      startEl.value = ymd(new Date(now.getFullYear(), now.getMonth(), 1));        // 1st of this month
-      endEl.value = ymd(new Date(now.getFullYear(), now.getMonth() + 1, 0));       // last day of this month
+      // Default range: next month's first Monday through its last Sunday (whole weeks).
+      var nm = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      var firstMon = addDays(nm, (8 - nm.getDay()) % 7);                          // Sun=0 -> +1, Mon -> +0
+      var nmLast = new Date(nm.getFullYear(), nm.getMonth() + 1, 0);
+      var lastSun = addDays(nmLast, -nmLast.getDay());                             // Sun -> +0
+      startEl.value = ymd(firstMon);
+      endEl.value = ymd(lastSun);
 
       // ---- Defaults ----
       if (outSel) outSel.value = 'Mini';
       if (tileEl) tileEl.value = '4up';
       if (duplexEl) duplexEl.checked = true;
+      var CHK_DEFAULTS = ['monthly', 'weekly', 'daily', 'thanks', 'st-squares', 'st-month-end', 'st-guide'];
       ORDER.forEach(function (t) {
         var el = document.getElementById('chk-' + t);
-        if (el) el.checked = true;
+        if (el) el.checked = CHK_DEFAULTS.indexOf(t) !== -1;
       });
-      var INS_DEFAULTS = { 'st-sheet': 1, 'st-key': 1, 'st-tree': 1, 'st-loot': 1, 'st-quest': 1, 'brain-dump': 4, 'collections': 2, 'sketch': 4, 'expense-log': 1, 'future-log': 1, 'project': 2 };
+      var INS_DEFAULTS = { 'st-sheet': 1, 'st-key': 1, 'st-tree': 1, 'st-loot': 1, 'st-quest': 1 };
       INSERT_KEYS.forEach(function (k) {
         var el = document.getElementById('ins-' + k);
-        if (el && INS_DEFAULTS[k]) el.value = INS_DEFAULTS[k];
+        if (el) el.value = INS_DEFAULTS[k] || 0;
       });
+      var fillerEl = document.getElementById('filler-type');
+      if (fillerEl) fillerEl.value = 'random';
+      if (paperSel) paperSel.value = 'Letter';
 
       if (themeEl) {
         buildCustomPanel();

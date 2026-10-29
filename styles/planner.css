@@ -1153,6 +1153,8 @@ h4.label {
 .st-col-name {
   font-size: 6.5pt; text-align: center; color: var(--accent-soft);
   text-transform: uppercase; letter-spacing: 0.04em; padding-top: 1mm; overflow-wrap: anywhere;
+  /* always reserve two label lines so a wrapped name ("Home & Money") doesn't shorten its trunk */
+  line-height: 1.2; min-height: calc(2.4em + 1mm);
 }
 .st-tree-base { display: flex; align-items: center; gap: 2mm; margin-top: 2mm; font-size: 7pt; color: var(--accent-soft); text-transform: uppercase; }
 .st-tree-lv { flex: 1; border-bottom: 1px dotted var(--line); height: 5mm; }
@@ -1177,7 +1179,7 @@ h4.label {
 
 /* Skill squares tracker */
 .st-sq-grid {
-  display: grid; grid-template-columns: 8mm repeat(31, 1fr);
+  display: grid; grid-template-columns: 8mm repeat(var(--sq-cols, 31), 1fr);
   flex: 1; align-content: stretch;
   border: 1px solid var(--box-border); border-radius: 4px; overflow: hidden;
 }
@@ -1233,7 +1235,24 @@ body.size-mini .cols { gap: 4px; }
 
 /* Daily — hide mood tracker box (too decorative for mini space) */
 body.size-mini .daily .mood { display: none; }
-body.size-mini .daily .reflect .box { min-height: 10mm; }
+
+/* Daily — Mini swaps Self Reflection for a one-line win */
+.daily .win { display: none; }
+body.size-mini .daily .reflect { display: none; }
+body.size-mini .daily .win { display: block; margin-top: auto; }
+/* Mini daily is just priorities, to-do and win: drop the time blocks, use the full width */
+body.size-mini .daily .cols > .col:nth-child(2) { display: none; }
+/* Mini keeps three priorities (matches the weekly Top 3) */
+body.size-mini .daily .prio-extra { display: none; }
+body.size-mini .daily .numbered > .line:nth-child(3) { border-bottom: none; }
+.daily .n-mini { display: none; }
+body.size-mini .daily .n-mini { display: inline; }
+body.size-mini .daily .n-full { display: none; }
+/* Mini to-dos are two lines each: checkbox on every other line */
+body.size-mini .daily .todo .line:nth-child(even) .check { visibility: hidden; }
+/* The space Self Reflection gave up goes to extra to-do lines */
+.daily .todo .mini-only { display: none; }
+body.size-mini .daily .todo .mini-only { display: flex; }
 
 /* Weekly day blocks */
 body.size-mini .weekly .day { margin-bottom: 2px; }
@@ -1370,12 +1389,310 @@ body.size-mini .st-loot-lv { font-size: 6pt; }
 body.size-mini .st-loot-chk { font-size: 7pt; }
 body.size-mini .st-q-sub { font-size: 4.5pt; padding-left: 4mm; }
 body.size-mini .st-q-sub .st-q-due { flex-basis: 9mm; }
-body.size-mini .st-sq-grid { grid-template-columns: 5mm repeat(31, 1fr); }
+body.size-mini .st-sq-grid { grid-template-columns: 5mm repeat(var(--sq-cols, 31), 1fr); }
 body.size-mini .sq-cell { font-size: 3.5pt; }
 body.size-mini .sq-code { font-size: 4.5pt; }
 body.size-mini .sq-branch { font-size: 4.5pt; }
+/* Mini two-page spread: half the columns, so the cells and numbers can be bigger */
+body.size-mini .sq-half .st-sq-grid { grid-template-columns: 6mm repeat(var(--sq-cols, 16), 1fr); }
+body.size-mini .sq-half .sq-cell { font-size: 5pt; }
+body.size-mini .sq-half .sq-code { font-size: 5.5pt; }
+body.size-mini .sq-half .sq-branch { font-size: 5pt; }
 body.size-mini .st-note { font-size: 4.5pt; margin-top: 1mm; }
 body.size-mini .st-me-head, body.size-mini .st-me-row { grid-template-columns: 1fr 9mm 9mm; gap: 1mm; }
 body.size-mini .st-me-head { font-size: 5pt; }
 body.size-mini .st-me-name { font-size: 6pt; }
 body.size-mini .st-me-row .st-stat-box { height: 5mm; }
+
+/* Instruction pages (How to Play / Skill Ideas) */
+.st-guide { font-size: 7.5pt; line-height: 1.3; color: var(--ink); }
+.gd-list { margin: 0; padding-left: 4.5mm; display: flex; flex-direction: column; gap: 1.6mm; }
+.gd-list li::marker { color: var(--accent-deep); font-size: 0.9em; }
+.gd-list b { color: var(--accent-deep); font-weight: normal; letter-spacing: 0.02em; }
+.gd-ideas { flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 1.4mm; padding: 1mm 0 2mm; }
+.gd-bname {
+  font-size: 0.95em; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--accent-soft); border-bottom: 1px solid var(--accent-border); margin-bottom: 0.4mm;
+}
+.gd-branch ul { margin: 0; padding: 0 0 0 1mm; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 1.6mm 2mm; }
+.gd-branch li::before { content: "• "; color: var(--accent); }
+.gd-blank { border-bottom: 1px dotted var(--line); height: 4mm; }
+.gd-tips { margin-top: auto; padding-top: 2mm; font-style: italic; color: var(--muted); font-size: 0.9em; }
+.gd-tips b { font-style: normal; color: var(--accent-deep); font-weight: normal; }
+
+body.size-mini .st-guide { font-size: 5.6pt; line-height: 1.28; }
+body.size-mini .gd-list { padding-left: 3.5mm; gap: 1mm; }
+body.size-mini .gd-ideas { gap: 1mm; }
+body.size-mini .gd-branch ul { gap: 1.4mm 1.5mm; }
+body.size-mini .gd-bname { margin-bottom: 0.8mm; }
+body.size-mini .gd-blank { height: 3mm; }
+
+/* ---- Character sheet: skill icons + RPG display font, per theme ---- */
+:root {
+  --font-rpg: "Cardo", Georgia, serif;
+  /* Body, Mind, Craft, Bonds, Home & Money (Font Awesome 6 solid) */
+  --ic-0: "\f554"; --ic-1: "\f518"; --ic-2: "\f0c4"; --ic-3: "\f004"; --ic-4: "\f015";   /* walking, book, scissors, heart, house */
+}
+body.theme-ocean    { --font-rpg: "Cinzel", serif;
+  --ic-0: "\f5c4"; --ic-1: "\f14e"; --ic-2: "\f6e3"; --ic-3: "\f1cd"; --ic-4: "\f13d"; }   /* swimmer, compass, hammer, life ring, anchor */
+body.theme-blossom  { --font-rpg: "Cormorant Garamond", serif;
+  --ic-0: "\f5bb"; --ic-1: "\f518"; --ic-2: "\f53f"; --ic-3: "\f004"; --ic-4: "\f015"; }   /* spa, book, palette, heart, house */
+body.theme-forest   { --font-rpg: "Cinzel", serif;
+  --ic-0: "\f6ec"; --ic-1: "\f70e"; --ic-2: "\f6e3"; --ic-3: "\f6bb"; --ic-4: "\f1bb"; }   /* hiker, scroll, hammer, campground, tree */
+body.theme-noir     { --font-rpg: "Montserrat", sans-serif;
+  --ic-0: "\f44b"; --ic-1: "\f5dc"; --ic-2: "\f5ad"; --ic-3: "\f2b5"; --ic-4: "\f51e"; }   /* dumbbell, brain, pen nib, handshake, coins */
+body.theme-midnight { --font-rpg: "Cinzel", serif;
+  --ic-0: "\f3ed"; --ic-1: "\f6e8"; --ic-2: "\f6e3"; --ic-3: "\f004"; --ic-4: "\f3a5"; }   /* shield, wizard hat, hammer, heart, gem */
+body.theme-sunset   { --font-rpg: "Quicksand", sans-serif;
+  --ic-0: "\f70c"; --ic-1: "\f0eb"; --ic-2: "\f53f"; --ic-3: "\f004"; --ic-4: "\f015"; }   /* runner, bulb, palette, heart, house */
+body.theme-lavender { --font-rpg: "Cormorant Garamond", serif;
+  --ic-0: "\f21e"; --ic-1: "\f6e8"; --ic-2: "\f72b"; --ic-3: "\f4be"; --ic-4: "\f3a5"; }   /* heartbeat, wizard hat, wand, hand-heart, gem */
+body.theme-mint     { --font-rpg: "Nunito", sans-serif;
+  --ic-0: "\f5d1"; --ic-1: "\f5dc"; --ic-2: "\f5ad"; --ic-3: "\f2b5"; --ic-4: "\f4d8"; }   /* apple, brain, pen nib, handshake, seedling */
+body.theme-sepia    { --font-rpg: "Special Elite", "Courier New", monospace;
+  --ic-0: "\f3ed"; --ic-1: "\f70e"; --ic-2: "\f56b"; --ic-3: "\f2b5"; --ic-4: "\f51e"; }   /* shield, scroll, quill, handshake, coins */
+body.theme-bw       { --font-rpg: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  --ic-0: "\f44b"; --ic-1: "\f5dc"; --ic-2: "\f5ad"; --ic-3: "\f2b5"; --ic-4: "\f51e"; }
+
+.st-ic {
+  flex: none; width: 8mm; height: 8mm; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-bg); border: 1px solid var(--accent-border);
+  color: var(--accent-deep);
+}
+.st-ic::before {
+  font-family: "Font Awesome 6 Free", sans-serif; font-weight: 900;
+  font-size: 3.6mm; line-height: 1;
+}
+.st-ic[data-i="0"]::before { content: var(--ic-0); }
+.st-ic[data-i="1"]::before { content: var(--ic-1); }
+.st-ic[data-i="2"]::before { content: var(--ic-2); }
+.st-ic[data-i="3"]::before { content: var(--ic-3); }
+.st-ic[data-i="4"]::before { content: var(--ic-4); }
+.st-stat-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.6mm; }
+.st-sheet .st-stat-name { flex: none; font-family: var(--font-rpg); font-size: 10pt; letter-spacing: 0.03em; }
+.st-stat-focus { display: flex; align-items: flex-end; gap: 1.2mm; font-size: 5.5pt; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-soft); }
+.st-stat-focus i { flex: 1; border-bottom: 1px dotted var(--line); height: 3mm; }
+.st-sheet .st-lvl-box span, .st-sheet h4.label { font-family: var(--font-rpg); }
+.st-why { margin-top: 2mm; }
+.st-why h4.label { margin-top: 0; }
+
+body.size-mini .st-ic { width: 6mm; height: 6mm; }
+body.size-mini .st-ic::before { font-size: 2.8mm; }
+body.size-mini .st-sheet .st-stat-name { font-size: 7.5pt; }
+body.size-mini .st-stat-focus { font-size: 4pt; }
+body.size-mini .st-stat-focus i { height: 2.4mm; }
+body.size-mini .st-stat { gap: 1.5mm; }
+body.size-mini .st-why { margin-top: 1mm; }
+
+/* Planner "Page by Page" list: no numbering, bold lead-ins only */
+.gd-plain { list-style: none; padding-left: 0; }
+body.size-mini .gd-plain { padding-left: 0; }
+body.size-mini .pl-guide { font-size: 6.5pt; line-height: 1.3; }
+body.size-mini .pl-guide .gd-list { gap: 2.2mm; }
+.pl-guide .gd-list { flex: 1; }
+
+/* Month's End rows share the Character Sheet's branch icons and display font */
+.st-me-name { display: flex; align-items: center; gap: 1.8mm; font-family: var(--font-rpg); }
+.st-me-name .st-ic { width: 6mm; height: 6mm; }
+.st-me-name .st-ic::before { font-size: 2.8mm; }
+body.size-mini .st-me-name { gap: 1.2mm; }
+body.size-mini .st-me-name .st-ic { width: 4.6mm; height: 4.6mm; }
+body.size-mini .st-me-name .st-ic::before { font-size: 2.1mm; }
+
+/* ---- D&D / Homebrewery ----
+   Palette and fonts follow Homebrewery's 5ePHB theme (--HB_Color_* variables):
+   header text #58180D, header underline #C0AD6A, horizontal rule #9C2B1B, accent/table/note
+   #E0E5C1, monster block #F2E5B5, descriptive box #FAF7EA, caption #766649. The fonts are the
+   Remake faces from the Homebrewery repo, bundled in /fonts/homebrewery. */
+@font-face { font-family: "BookInsanityRemake"; font-style: normal; font-weight: 400; src: url("../fonts/homebrewery/Bookinsanity.woff2") format("woff2"); }
+@font-face { font-family: "BookInsanityRemake"; font-style: normal; font-weight: 700; src: url("../fonts/homebrewery/Bookinsanity-Bold.woff2") format("woff2"); }
+@font-face { font-family: "BookInsanityRemake"; font-style: italic; font-weight: 400; src: url("../fonts/homebrewery/Bookinsanity-Italic.woff2") format("woff2"); }
+@font-face { font-family: "BookInsanityRemake"; font-style: italic; font-weight: 700; src: url("../fonts/homebrewery/Bookinsanity-Bold-Italic.woff2") format("woff2"); }
+@font-face { font-family: "MrEavesRemake"; font-style: normal; font-weight: 400; src: url("../fonts/homebrewery/Mr-Eaves-Small-Caps.woff2") format("woff2"); }
+@font-face { font-family: "ScalySansRemake"; font-style: normal; font-weight: 400; src: url("../fonts/homebrewery/Scaly-Sans.woff2") format("woff2"); }
+@font-face { font-family: "ScalySansRemake"; font-style: normal; font-weight: 700; src: url("../fonts/homebrewery/Scaly-Sans-Bold.woff2") format("woff2"); }
+@font-face { font-family: "ScalySansRemake"; font-style: italic; font-weight: 400; src: url("../fonts/homebrewery/Scaly-Sans-Italic.woff2") format("woff2"); }
+@font-face { font-family: "ScalySansSmallCapsRemake"; font-style: normal; font-weight: 400; src: url("../fonts/homebrewery/Scaly-Sans-Caps.woff2") format("woff2"); }
+
+body.theme-homebrew {
+  --font-body: "BookInsanityRemake", "EB Garamond", Georgia, serif;
+  --font-rpg: "MrEavesRemake", "Cinzel", Georgia, serif;
+  --ink: #1c1812; --muted: #766649; --bg: #f1e8cf;
+  --accent: #c0ad6a; --accent-soft: #9c2b1b; --accent-deep: #58180d;
+  --box-bg: #faf7ea; --box-border: #c9ad6a; --accent-bg: #e0e5c1; --accent-border: #c0ad6a;
+  --line: #b8a36a; --line-solid: #d8c892; --cell-border: #d8c892; --cell-num: #766649;
+  --daynum-border: #c0ad6a; --daynum-bg: #f2e5b5; --daynum-ink: #58180d; --blank-bg: #e6dab6;
+  --screen-bg: #b9aa84;
+  --mark: "\f6cf"; --ornament: "\f6d5";   /* FA d20 · dragon */
+  --ic-0: "\f6de"; --ic-1: "\f6e8"; --ic-2: "\f6e3"; --ic-3: "\f2b5"; --ic-4: "\f51e";   /* fist, wizard hat, hammer, handshake, coins */
+}
+/* Parchment: light cream centre, warm blotches, darker foxed edges, fine grain */
+body.theme-homebrew .page {
+  background-color: #f1e8cf;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45 0 0 0 0 .32 0 0 0 0 .15 0 0 0 .10 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    radial-gradient(ellipse at 50% 48%, rgba(255, 252, 238, 0.75) 0%, rgba(255, 252, 238, 0) 62%),
+    radial-gradient(circle at 10% 7%, rgba(222, 178, 96, 0.30) 0%, rgba(222, 178, 96, 0) 34%),
+    radial-gradient(circle at 93% 96%, rgba(204, 150, 78, 0.32) 0%, rgba(204, 150, 78, 0) 38%),
+    radial-gradient(circle at 92% 9%, rgba(222, 178, 96, 0.16) 0%, rgba(222, 178, 96, 0) 28%),
+    radial-gradient(ellipse at 50% 50%, rgba(176, 128, 62, 0) 58%, rgba(176, 128, 62, 0.22) 100%);
+}
+body.theme-homebrew .hd { border-bottom: 2px solid var(--accent); }
+body.theme-homebrew .hd .title { font-family: "MrEavesRemake", "Cinzel", Georgia, serif; font-size: 17pt; color: var(--accent-deep); letter-spacing: 0.02em; }
+body.theme-homebrew h4.label { font-family: "MrEavesRemake", "Cinzel", Georgia, serif; font-size: 10pt; color: var(--accent-deep); letter-spacing: 0.08em; }
+/* Notes, tables and small print use Scaly Sans, as in Homebrewery */
+body.theme-homebrew .dow, body.theme-homebrew .st-stat-focus, body.theme-homebrew .st-me-head,
+body.theme-homebrew .proj-label, body.theme-homebrew .st-lvl-box span, body.theme-homebrew .gd-bname,
+body.theme-homebrew .num, body.theme-homebrew .exp-header, body.theme-homebrew .st-key-name {
+  font-family: "ScalySansRemake", "Segoe UI", sans-serif;
+}
+
+/* ---- Homebrewery refinements (matched to a shared Homebrewery document) ---- */
+body.theme-homebrew { --bg: #efe6cd; --screen-bg: #a99c7c; }
+/* Parchment: neutral cream centre, grey-brown foxing at the edges, faint stains.
+   The layers live in variables so Grid / Dot Grid pages can sit their rulings on top of the paper. */
+body.theme-homebrew {
+  --hb-paper:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .40 0 0 0 0 .32 0 0 0 0 .20 0 0 0 .09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    radial-gradient(ellipse at 50% 46%, rgba(250, 245, 228, 0.80) 0%, rgba(250, 245, 228, 0) 66%),
+    radial-gradient(circle at 8% 6%, rgba(176, 156, 112, 0.34) 0%, rgba(176, 156, 112, 0) 32%),
+    radial-gradient(circle at 95% 97%, rgba(168, 146, 100, 0.36) 0%, rgba(168, 146, 100, 0) 36%),
+    radial-gradient(circle at 96% 8%, rgba(190, 170, 126, 0.20) 0%, rgba(190, 170, 126, 0) 26%),
+    radial-gradient(circle at 4% 92%, rgba(190, 170, 126, 0.18) 0%, rgba(190, 170, 126, 0) 26%),
+    radial-gradient(ellipse at 50% 50%, rgba(140, 118, 76, 0) 60%, rgba(140, 118, 76, 0.24) 100%);
+  --hb-paper-size: 220px 220px, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+}
+body.theme-homebrew .page {
+  background-color: #efe6cd;
+  background-image: var(--hb-paper);
+  background-size: var(--hb-paper-size);
+}
+body.theme-homebrew .page.grid {
+  background-image:
+    repeating-linear-gradient(var(--line-solid) 0, var(--line-solid) 1px, transparent 1px, transparent 5mm),
+    repeating-linear-gradient(90deg, var(--line-solid) 0, var(--line-solid) 1px, transparent 1px, transparent 5mm),
+    var(--hb-paper);
+  background-size: 5mm 5mm, 5mm 5mm, var(--hb-paper-size);
+}
+body.theme-homebrew .page.dot-grid {
+  background-image: radial-gradient(circle, var(--line) 0.6mm, transparent 0.6mm), var(--hb-paper);
+  background-size: 5mm 5mm, var(--hb-paper-size);
+}
+
+/* Section labels: Mr Eaves small caps in oxblood with a gold underline (Homebrewery h3) */
+body.theme-homebrew h4.label { border-bottom: 1.5px solid #c0ad6a; padding-bottom: 0.5mm; }
+
+/* Content boxes: cream "descriptive box" with black tapered bars top and bottom */
+body.theme-homebrew .box:not(.mood .box) {
+  position: relative; background: #faf7ea; border: 0; border-radius: 0;
+  border-left: 1px solid #2b2b2b; border-right: 1px solid #2b2b2b;
+  box-shadow: 1px 3px 9px rgba(60, 45, 20, 0.30);
+}
+body.theme-homebrew .box:not(.mood .box)::before,
+body.theme-homebrew .box:not(.mood .box)::after {
+  content: ""; position: absolute; left: -2px; right: -2px; height: 4px; background: #1e1e1e;
+  clip-path: polygon(0 50%, 4px 0, calc(100% - 4px) 0, 100% 50%, calc(100% - 4px) 100%, 4px 100%);
+}
+body.theme-homebrew .box:not(.mood .box)::before { top: -2px; }
+body.theme-homebrew .box:not(.mood .box)::after { bottom: -2px; }
+/* ...and the green "DM note" variant for accent boxes */
+body.theme-homebrew .box.accent { background: #e0e5c1; }
+body.theme-homebrew .gd-tips {
+  position: relative; background: #e0e5c1; color: var(--ink); font-style: normal; font-size: 0.88em;
+  padding: 1.6mm 2mm; margin-top: auto;
+  border-left: 1px solid #2b2b2b; border-right: 1px solid #2b2b2b;
+  box-shadow: 1px 3px 9px rgba(60, 45, 20, 0.30);
+}
+body.theme-homebrew .gd-tips::before, body.theme-homebrew .gd-tips::after {
+  content: ""; position: absolute; left: -2px; right: -2px; height: 4px; background: #1e1e1e;
+  clip-path: polygon(0 50%, 4px 0, calc(100% - 4px) 0, 100% 50%, calc(100% - 4px) 100%, 4px 100%);
+}
+body.theme-homebrew .gd-tips::before { top: -2px; }
+body.theme-homebrew .gd-tips::after { bottom: -2px; }
+
+/* Character sheet stats as a monster stat block: parchment-yellow, red tapered bars */
+body.theme-homebrew .st-stats {
+  position: relative; background: #f2e5b5; padding: 3mm 2.5mm; margin: 1.5mm 0;
+  border: 1px solid #d9b25a; box-shadow: 1px 3px 9px rgba(60, 45, 20, 0.30);
+}
+body.theme-homebrew .st-stats::before, body.theme-homebrew .st-stats::after {
+  content: ""; position: absolute; left: -2px; right: -2px; height: 4px; background: #9c2b1b;
+  clip-path: polygon(0 50%, 5px 0, calc(100% - 5px) 0, 100% 50%, calc(100% - 5px) 100%, 5px 100%);
+}
+body.theme-homebrew .st-stats::before { top: -2px; }
+body.theme-homebrew .st-stats::after { bottom: -2px; }
+body.theme-homebrew .st-stat { position: relative; }
+body.theme-homebrew .st-stat + .st-stat::before {   /* thin red divider like the stat block hr */
+  content: ""; position: absolute; left: 0; right: 0; top: -1.2mm; height: 1px;
+  background: linear-gradient(90deg, rgba(156, 43, 27, 0), #9c2b1b 15%, #9c2b1b 85%, rgba(156, 43, 27, 0));
+}
+body.theme-homebrew .st-stat-box, body.theme-homebrew .st-lvl-box { background: #faf7ea; border: 1px solid #2b2b2b; border-radius: 0; }
+
+/* Tables: pale green zebra rows, no rules */
+body.theme-homebrew .exp-row:nth-child(odd),
+body.theme-homebrew .st-loot-row:nth-child(odd) { background: #e0e5c1; }
+body.theme-homebrew .st-me-head, body.theme-homebrew .exp-header { font-weight: 700; color: #1c1812; }
+body.theme-homebrew.size-mini .st-stats { padding: 1.6mm 2mm; margin: 1mm 0; }
+body.theme-homebrew.size-mini .st-stat + .st-stat::before { top: -0.8mm; }
+
+/* ---- Month's End mirrors the Character Sheet's stat rows (all themes) ---- */
+.st-me-name { font-size: 10pt; }
+.st-me-name .st-ic { width: 8mm; height: 8mm; }
+.st-me-name .st-ic::before { font-size: 3.6mm; }
+.st-me-row .st-stat-box { height: 8mm; }
+body.size-mini .st-me-name { font-size: 7.5pt; }
+body.size-mini .st-me-name .st-ic { width: 6mm; height: 6mm; }
+body.size-mini .st-me-name .st-ic::before { font-size: 2.8mm; }
+body.size-mini .st-me-row .st-stat-box { height: 6mm; }
+.st-me-block { margin: 1mm 0; }
+
+/* ---- Homebrew: priorities as a red-barred "quest" scroll; Month's End as a stat block ---- */
+body.theme-homebrew .box.prio {
+  background: #f2e5b5; border-left: 1px solid #d9b25a; border-right: 1px solid #d9b25a;
+}
+body.theme-homebrew .box.prio::before, body.theme-homebrew .box.prio::after { background: #9c2b1b; }
+body.theme-homebrew .prio .num { color: #9c2b1b; font-family: "MrEavesRemake", "Cinzel", Georgia, serif; font-size: 10pt; }
+body.theme-homebrew.size-mini .prio .num { font-size: 6.5pt; }
+body.theme-homebrew .prio > .line { border-bottom-color: rgba(156, 43, 27, 0.35); }
+body.theme-homebrew .st-me-block {
+  position: relative; background: #f2e5b5; padding: 2.4mm 2.5mm; margin: 1.5mm 0;
+  border: 1px solid #d9b25a; box-shadow: 1px 3px 9px rgba(60, 45, 20, 0.30);
+}
+body.theme-homebrew .st-me-block::before, body.theme-homebrew .st-me-block::after {
+  content: ""; position: absolute; left: -2px; right: -2px; height: 4px; background: #9c2b1b;
+  clip-path: polygon(0 50%, 5px 0, calc(100% - 5px) 0, 100% 50%, calc(100% - 5px) 100%, 5px 100%);
+}
+body.theme-homebrew .st-me-block::before { top: -2px; }
+body.theme-homebrew .st-me-block::after { bottom: -2px; }
+body.theme-homebrew .st-me-row { position: relative; background: transparent; }
+body.theme-homebrew .st-me-row + .st-me-row::before {
+  content: ""; position: absolute; left: 0; right: 0; top: -0.9mm; height: 1px;
+  background: linear-gradient(90deg, rgba(156, 43, 27, 0), #9c2b1b 15%, #9c2b1b 85%, rgba(156, 43, 27, 0));
+}
+body.theme-homebrew .st-me-rows { gap: 1.8mm; margin: 0.5mm 0 0; }
+body.theme-homebrew .st-me-head { border-bottom: 1px solid #9c2b1b; padding-bottom: 0.8mm; margin-bottom: 0.8mm; color: #58180d; }
+body.theme-homebrew.size-mini .st-me-row .st-stat-box { height: 5mm; }
+body.theme-homebrew.size-mini .st-me-block { padding: 1.6mm 2mm; margin: 1mm 0; }
+body.theme-homebrew.size-mini .st-me-rows { gap: 1.1mm; }
+body.theme-homebrew.size-mini .st-me-row + .st-me-row::before { top: -0.6mm; }
+body.theme-homebrew.size-mini .st-month-end .st-lvl-box { height: 7mm; }
+body.theme-homebrew.size-mini .st-month-end h4.label { margin: 3px 0 2px; }
+body.theme-homebrew.size-mini .st-month-end .review-box + .review-box { margin-top: 1.4mm; }
+body.theme-homebrew.size-mini .st-month-end .review-box .line:nth-child(4) { display: none; }
+body.theme-homebrew .box.prio:not(.mood .box) {
+  background: #f2e5b5; border-left: 1px solid #d9b25a; border-right: 1px solid #d9b25a;
+}
+body.theme-homebrew .box.prio:not(.mood .box)::before, body.theme-homebrew .box.prio:not(.mood .box)::after { background: #9c2b1b; }
+
+/* ---- Homebrew: One-Line Win as a Homebrewery code block (cream, monospace, oxblood double rule) ---- */
+body.theme-homebrew .win .box:not(.mood .box) {
+  background: #faf7ea; border: 1.5px solid #58180d; border-radius: 1px;
+  box-shadow: inset 0 0 0 2px #faf7ea, inset 0 0 0 3px #c0ad6a, 1px 3px 9px rgba(60, 45, 20, 0.22);
+  font-family: "Courier New", Courier, monospace; color: #58180d;
+}
+body.theme-homebrew .win .box:not(.mood .box)::before,
+body.theme-homebrew .win .box:not(.mood .box)::after { display: none; }
+body.theme-homebrew .win .box > .line { border-bottom: 1px dotted #c0ad6a; }
+body.theme-homebrew .win .box > .line::before { content: "> "; font-weight: 700; font-size: 8pt; color: #9c2b1b; }
+body.theme-homebrew.size-mini .win .box > .line::before { font-size: 6pt; }

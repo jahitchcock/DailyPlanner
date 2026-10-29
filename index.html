@@ -34,6 +34,7 @@
     <div class="row checks">
       <label><input type="checkbox" id="chk-st-squares"> Skill Squares</label>
       <label><input type="checkbox" id="chk-st-month-end"> Skill Tree Month's End</label>
+      <label><input type="checkbox" id="chk-st-guide"> Instruction Pages</label>
     </div>
     <div class="row checks inserts-row">
       <label>Character Sheet <input type="number" id="ins-st-sheet" class="ins-count" value="0" min="0" max="99"></label>
@@ -81,6 +82,7 @@
           <option value="theme-lavender">Lavender</option>
           <option value="theme-mint">Mint</option>
           <option value="theme-sepia">Sepia</option>
+          <option value="theme-homebrew">D&amp;D / Homebrewery</option>
           <option value="theme-bw">Black &amp; White (basic)</option>
           <option value="custom">Custom…</option>
         </select>
@@ -111,6 +113,15 @@
         <option value="2up">2-up (landscape, cut in half)</option>
         <option value="4up">4-up (portrait, cut in quarters)</option>
       </select></label>
+      <label>Filler pages: <select id="filler-type">
+        <option value="random">Random mix</option>
+        <option value="blank">Blank</option>
+        <option value="dot-grid">Dot grid</option>
+        <option value="grid">Grid</option>
+        <option value="brain-dump">Brain dump</option>
+        <option value="collections">Collections</option>
+        <option value="sketch">Sketch</option>
+      </select></label>
       <label><input type="checkbox" id="duplex"> 2-sided order (duplex)</label>
       <span id="fit-note" class="hint"></span>
     </div>
@@ -119,7 +130,7 @@
       <button id="print" class="secondary" onclick="window.print()">Print / Save PDF</button>
     </div>
     <div class="status" id="status"></div>
-    <div class="hint">In the print dialog: Paper size = <b>A5</b>, Margins = <b>None</b>, enable <b>Background graphics</b>.</div>
+    <div class="hint">In the print dialog: Paper size = <b id="print-paper">A5</b>, Margins = <b>None</b>, enable <b>Background graphics</b>.</div>
   </div>
 
   <!-- ============ Custom theme panel (populated by JS) ============ -->
@@ -152,17 +163,17 @@
         <div class="col">
           <div class="mood"><div class="box"></div></div>
 
-          <h4 class="label">Top 5 Priorities</h4>
-          <div class="box numbered lines">
+          <h4 class="label">Top <span class="n-full">5</span><span class="n-mini">3</span> Priorities</h4>
+          <div class="box accent prio numbered lines">
             <div class="line"><span class="num">1</span></div>
             <div class="line"><span class="num">2</span></div>
             <div class="line"><span class="num">3</span></div>
-            <div class="line"><span class="num">4</span></div>
-            <div class="line"><span class="num">5</span></div>
+            <div class="line prio-extra"><span class="num">4</span></div>
+            <div class="line prio-extra"><span class="num">5</span></div>
           </div>
 
           <h4 class="label">To-Do</h4>
-          <div class="box lines">
+          <div class="box lines todo">
             <div class="line"><span class="check">&#9744;</span></div>
             <div class="line"><span class="check">&#9744;</span></div>
             <div class="line"><span class="check">&#9744;</span></div>
@@ -171,6 +182,19 @@
             <div class="line"><span class="check">&#9744;</span></div>
             <div class="line"><span class="check">&#9744;</span></div>
             <div class="line"><span class="check">&#9744;</span></div>
+            <div class="line mini-only"><span class="check">&#9744;</span></div>
+            <div class="line mini-only"><span class="check">&#9744;</span></div>
+            <div class="line mini-only"><span class="check">&#9744;</span></div>
+            <div class="line mini-only"><span class="check">&#9744;</span></div>
+            <div class="line mini-only"><span class="check">&#9744;</span></div>
+            <div class="line mini-only"><span class="check">&#9744;</span></div>
+            <div class="line mini-only"><span class="check">&#9744;</span></div>
+            <div class="line mini-only"><span class="check">&#9744;</span></div>
+          </div>
+
+          <div class="win">
+            <h4 class="label">One-Line Win</h4>
+            <div class="box lines"><div class="line"></div><div class="line"></div></div>
           </div>
 
           <div class="reflect">
@@ -217,7 +241,7 @@
         <span class="ornament"></span>
       </div>
       <h4 class="label">Top 3 This Week</h4>
-      <div class="box accent numbered lines">
+      <div class="box accent prio numbered lines">
         <div class="line"><span class="num">1</span></div>
         <div class="line"><span class="num">2</span></div>
         <div class="line"><span class="num">3</span></div>
@@ -572,6 +596,10 @@
       </div>
       <h4 class="label">Stats</h4>
       <div class="st-stats"></div>
+      <div class="st-why">
+        <h4 class="label">My Why</h4>
+        <div class="box lines"><div class="line"></div><div class="line"></div></div>
+      </div>
     </div>
   </template>
 
@@ -617,6 +645,49 @@
     </div>
   </template>
 
+  <template id="tpl-st-guide-play">
+    <div class="page st-page st-guide">
+      <div class="hd">
+        <span class="title"><span class="mark"></span> How to Play</span>
+        <span class="ornament"></span>
+      </div>
+      <ol class="gd-list"></ol>
+    </div>
+  </template>
+
+  <template id="tpl-st-guide-ideas">
+    <div class="page st-page st-guide">
+      <div class="hd">
+        <span class="title"><span class="mark"></span> Skill Ideas</span>
+        <span class="ornament"></span>
+      </div>
+      <div class="gd-ideas"></div>
+      <div class="gd-tips">
+        <b>Tips.</b> Start with one skill per branch and add more once it&rsquo;s automatic. Make each skill small enough to do on your worst day. Hook it to something you already do (&ldquo;after coffee&rdquo;).
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-pl-guide-how">
+    <div class="page st-page st-guide pl-guide">
+      <div class="hd">
+        <span class="title"><span class="mark"></span> How the Planner Works</span>
+        <span class="ornament"></span>
+      </div>
+      <ol class="gd-list"></ol>
+    </div>
+  </template>
+
+  <template id="tpl-pl-guide-pages">
+    <div class="page st-page st-guide pl-guide">
+      <div class="hd">
+        <span class="title"><span class="mark"></span> Page by Page</span>
+        <span class="ornament"></span>
+      </div>
+      <ol class="gd-list gd-plain"></ol>
+    </div>
+  </template>
+
   <template id="tpl-st-squares">
     <div class="page st-page st-squares">
       <div class="hd">
@@ -635,8 +706,11 @@
         <span class="title"><span class="mark"></span> <span class="js-month"></span> &middot; Month's End</span>
         <span class="ornament"></span>
       </div>
-      <div class="st-me-head"><span>Branch</span><span>Squares</span><span>XP</span></div>
-      <div class="st-me-rows"></div>
+      <h4 class="label">Branch Totals</h4>
+      <div class="st-me-block">
+        <div class="st-me-head"><span>Branch</span><span>Squares</span><span>XP</span></div>
+        <div class="st-me-rows"></div>
+      </div>
       <div class="st-lvl">
         <div class="st-lvl-box"><span>XP gained</span></div>
         <div class="st-lvl-box"><span>Level reached</span></div>
